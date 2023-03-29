@@ -1,0 +1,134 @@
+,Repository_Url,Data_Access_Url,Subject_Area
+0,https://fitbir.nih.gov/,https://fitbir.nih.gov/content/access-data,"Clinical research, Imaging, Neuroscience"
+1,https://www.metabolomicsworkbench.org/,https://www.metabolomicsworkbench.org/data/browse.php,"Clinical research, Computational biology, Other"
+2,https://exrna.org/,https://exrna.org/resources/data/data-access-policy-summary/,"Clinical research, Neuroscience, Sequence biology"
+3,https://pharos.nih.gov,https://pharos.nih.gov,Sequence biology
+4,https://lincsproject.org/,https://maayanlab.cloud/sigcom-lincs/#/SignatureSearch/UpDown,"Computational biology, Sequence biology"
+5,https://motrpac-data.org/,https://motrpac-data.org/data-access,"Behavioral and social sciences, Clinical research, Other, Sequence biology"
+6,https://gtexportal.org/home/,https://gtexportal.org/home/datasets,Sequence biology
+7,https://portal.hubmapconsortium.org/,https://portal.hubmapconsortium.org/,"Computational biology, Imaging, Sequence biology"
+8,https://sparc.science,https://docs.sparc.science/docs/how-to-use-and-access-sparc-data,"Clinical research, Computational biology, Imaging, Neuroscience"
+9,https://odc-sci.org/,https://odc-sci.org/,"Computational biology, Neuroscience"
+10,https://portal.kidsfirstdrc.org,https://github.com/kids-first/kf-cloud-credits/blob/main/ExploringDatasets.md,"Clinical research, Sequence biology"
+11,https://data.sennetconsortium.org,undefined,"Computational biology, Imaging, Other, Sequence biology"
+12,https://data.4dnucleome.org/,https://data.4dnucleome.org/help/user-guide,"Imaging, Sequence biology"
+13,https://nindsgenetics.org/,undefined,"Clinical research, Neuroscience"
+14,https://monarchinitiative.org/,https://archive.monarchinitiative.org/latest/,"Clinical research, Imaging, Neuroscience, Sequence biology"
+15,https://www.uniprot.org/,https://www.uniprot.org/,Sequence biology
+16,https://www.openpain.org/,https://www.openpain.org/,Imaging
+17,https://portal.includedcc.org/login?redirect_path=/dashboard,https://portal.includedcc.org/login?redirect_path=/dashboard,"Behavioral and social sciences, Clinical research, Computational biology, Imaging, Neuroscience, Other, Sequence biology"
+18,https://mps.csb.pitt.edu/,https://mps.csb.pitt.edu/accounts/login/,"Clinical research, Computational biology, Imaging"
+19,https://opendata.ncats.nih.gov/covid19/,https://opendata.ncats.nih.gov/covid19/assays,Other
+20,https://covid.cd2h.org/,https://covid.cd2h.org/account-instructions,Clinical research
+21,https://np-mrd.org/,https://np-mrd.org/downloads,Other
+22,https://www.mousephenotype.org/,https://www.mousephenotype.org/understand/start-using-the-impc/,"Imaging, Neuroscience, Other, Sequence biology"
+23,https://openneuro.org/,https://openneuro.org/search?query={%22keywords%22:[]},Imaging
+24,https://dandiarchive.org/,https://dandiarchive.org/,Neuroscience
+25,https://nemoarchive.org/,https://nemoarchive.org/data/,Sequence biology
+26,https://www.brainimagelibrary.org/index.html,https://submit.brainimagelibrary.org/search,"Imaging, Neuroscience"
+27,https://bossdb.org/,https://bossdb.org/projects,"Imaging, Neuroscience"
+28,https://portal.imaging.datacommons.cancer.gov/,https://portal.imaging.datacommons.cancer.gov/about/,"Computational biology, Imaging"
+29,https://gdc.cancer.gov/,https://gdc.cancer.gov/submit-data/data-submission-policies,Sequence biology
+30,https://pdc.cancer.gov/pdc/,https://pdc.cancer.gov/pdc/submit-data,Sequence biology
+31,https://datacommons.cancer.gov/repository/cancer-data-service#project-datatype,https://datacommons.cancer.gov/repository/cancer-data-service,"Computational biology, Sequence biology"
+32,https://caninecommons.cancer.gov/#/,https://caninecommons.cancer.gov/#/icdc-data-model,"Clinical research, Computational biology, Sequence biology"
+33,https://cananolab.cancer.gov/#/,https://wiki.nci.nih.gov/display/caNanoLab/caNanoLab+and+Data+Sharing,Other
+34,https://datacatalog.ccdi.cancer.gov/,undefined,"Clinical research, Computational biology, Imaging, Sequence biology"
+35,https://moleculartargets.ccdi.cancer.gov/,undefined,"Clinical research, Computational biology, Sequence biology"
+36,https://www.cancerimagingarchive.net/,https://www.cancerimagingarchive.net/access-data/,Imaging
+37,https://ocg.cancer.gov/programs/ctd2/data-portal,https://ocg.cancer.gov/programs/ctd2/using-ctd2-data,"Computational biology, Sequence biology"
+38,https://ctd2-dashboard.nci.nih.gov/dashboard/,https://ocg.cancer.gov/programs/ctd2/using-ctd2-data,"Computational biology, Sequence biology"
+39,https://hcmi-searchable-catalog.nci.nih.gov/,https://ocg.cancer.gov/data/data-access,"Clinical research, Sequence biology"
+40,https://www.ndexbio.org,https://home.ndexbio.org/finding-and-querying-networks/,"Computational biology, Other, Sequence biology"
+41,https://cipinddirectory.cancer.gov,https://cipinddirectory.cancer.gov,Imaging
+42,http://www.informatics.jax.org/,http://www.informatics.jax.org/software.shtml,"Behavioral and social sciences, Computational biology, Neuroscience, Sequence biology"
+43,https://www.rcsb.org/,https://www.rcsb.org/,"Computational biology, Imaging"
+44,https://neidatacommons.nei.nih.gov/,undefined,"Clinical research, Computational biology, Imaging, Neuroscience, Sequence biology"
+45,https://anvil.terra.bio,https://anvilproject.org/learn/accessing-data/requesting-data-access/,"Clinical research, Computational biology, Neuroscience, Other, Sequence biology"
+46,https://www.yeastgenome.org/,https://www.yeastgenome.org/search?q=&is_quick=true,Sequence biology
+47,https://zfin.org/,https://zfin.org/,Sequence biology
+48,http://flybase.org/,http://flybase.org/cgi-bin/qbgui.fr.html,"Behavioral and social sciences, Computational biology, Neuroscience, Sequence biology"
+49,https://wormbase.org/#012-34-5,http://www.informatics.jax.org/software.shtml,"Behavioral and social sciences, Computational biology, Neuroscience, Sequence biology"
+50,https://rgd.mcw.edu/,https://rgd.mcw.edu/rgdweb/homepage/,"Computational biology, Sequence biology"
+51,https://www.cvrgrid.org/,https://www.cvrgrid.org/,"Computational biology, Sequence biology"
+52,https://biolincc.nhlbi.nih.gov/home/,https://biolincc.nhlbi.nih.gov/resource_overview/,"Behavioral and social sciences, Clinical research, Other"
+53,https://biodatacatalyst.nhlbi.nih.gov/,https://biodatacatalyst.nhlbi.nih.gov/resources/data/,"Clinical research, Computational biology, Imaging, Sequence biology"
+54,https://www.sleepdata.org/,https://sleepdata.org/datasets,"Behavioral and social sciences, Clinical research, Neuroscience"
+55,https://www.icpsr.umich.edu/web/pages/NACDA/,https://www.icpsr.umich.edu/web/pages/NACDA/restricted-data.html,"Behavioral and social sciences, Clinical research"
+56,https://adknowledgeportal.synapse.org/,https://adknowledgeportal.synapse.org/Data%20Access,"Computational biology, Imaging, Neuroscience, Sequence biology"
+57,https://naccdata.org/,https://naccdata.org/requesting-data/data-request-process,Neuroscience
+58,https://deliriumnetwork.org/delirium-research-hub/,undefined,"Behavioral and social sciences, Clinical research, Computational biology, Imaging, Neuroscience, Sequence biology"
+59,https://primatedatabase.org/,https://primatedatabase.org/help/policies#data-access-policy,Other
+60,https://www.niagads.org/,https://dss.niagads.org/,"Behavioral and social sciences, Clinical research, Computational biology, Imaging, Neuroscience, Sequence biology"
+61,https://www.gaain.org/,https://www.gaaindata.org/,"Clinical research, Imaging, Neuroscience"
+62,https://www.openicpsr.org/,https://www.openicpsr.org/openicpsr/search/studies,Behavioral and social sciences
+63,https://www.icpsr.umich.edu/web/pages/,https://www.icpsr.umich.edu/web/pages/ICPSR/index.html,Behavioral and social sciences
+64,https://nda.nih.gov/niaaa/,https://nda.nih.gov/get/access-data.html,"Behavioral and social sciences, Clinical research, Imaging, Neuroscience, Other, Sequence biology"
+65,https://nda.nih.gov/,https://nda.nih.gov/nda/access-data-info.html,"Behavioral and social sciences, Clinical research, Imaging, Neuroscience, Sequence biology"
+66,https://accessclinicaldata.niaid.nih.gov/,https://accessclinicaldata.niaid.nih.gov/,Clinical research
+67,https://www.bv-brc.org/,https://www.bv-brc.org/,"Clinical research, Computational biology, Sequence biology"
+68,https://veupathdb.org/,https://veupathdb.org/veupathdb/app/static-content/about.html,"Computational biology, Sequence biology"
+69,https://tbportals.niaid.nih.gov/,https://tbportals.niaid.nih.gov/download-data,"Clinical research, Imaging, Sequence biology"
+70,www.iedb.org,www.iedb.org (all data freely available),"Computational biology, Sequence biology"
+71,https://vdjserver.org/community,https://vdjserver.org/community/8899006209436478995-242ac118-0001-012,"Computational biology, Sequence biology"
+72,https://www.immport.org/home,https://docs.immport.org/home/about/,"Clinical research, Computational biology, Sequence biology"
+73,https://www.immgen.org/,http://rstats.immgen.org/DataPage/,Other
+74,https://immunespace.org/,undefined,"Clinical research, Computational biology, Sequence biology"
+75,https://www.hiv.lanl.gov/content/index,https://www.hiv.lanl.gov/content/index,"Clinical research, Computational biology, Other, Sequence biology"
+76,https://dice-database.org,https://dice-database.org/downloads  ; if non-aggregate data is needed it is available through dbGAP (accession: phs001703.v1.p1 ),"Clinical research, Sequence biology"
+77,https://www.itntrialshare.org/login/home/login.view?returnUrl=%2Fhome%2Fproject-start.view%3F,https://www.itntrialshare.org/login/home/login.view?returnUrl=%2Fhome%2Fproject-start.view%3F,"Behavioral and social sciences, Clinical research, Computational biology, Imaging, Neuroscience, Sequence biology"
+78,http://www.cellchat.org/,https://github.com/sqjin/CellChat,"Computational biology, Imaging, Sequence biology"
+79,http://www.hair-gel.net/,http://www.hair-gel.net/,"Computational biology, Sequence biology"
+80,https://skinregeneration.org/,undefined,"Computational biology, Imaging, Sequence biology"
+81,https://ida.loni.usc.edu/login.jsp?search=true,https://ida.loni.usc.edu/services/Menu/PDF/IDA_User_Manual.pdf,"Behavioral and social sciences, Clinical research, Imaging, Neuroscience"
+82,https://www.midrc.org/,https://data.midrc.org/,"Clinical research, Imaging"
+83,https://physionet.org/,https://physionet.org/about/database/,"Clinical research, Other"
+84,https://www.icpsr.umich.edu/web/pages/ADDEP/index.html,https://www.icpsr.umich.edu/web/pages/ADDEP/data.html,Behavioral and social sciences
+85,https://www.nitrc.org/,https://www.nitrc.org/plugins/mwiki/index.php/nitrc:User_Guide_-_Data_Access,"Imaging, Neuroscience"
+86,https://dash.nichd.nih.gov/,https://dash.nichd.nih.gov/resource/request,"Behavioral and social sciences, Clinical research"
+87,https://nyu.databrary.org/,http://databrary.org/about/agreement/agreement-annex-III.html,"Behavioral and social sciences, Neuroscience, Other"
+88,childes.talkbank.org,https://talkbank.org/share/,Behavioral and social sciences
+89,https://phonbank.talkbank.org/,https://talkbank.org/share/,Behavioral and social sciences
+90,https://ldbase.org,https://ldbase.org/resources,"Behavioral and social sciences, Clinical research"
+91,https://www.icpsr.umich.edu/web/pages/DSDR/index.html,https://www.icpsr.umich.edu/web/pages/DSDR/discover.html,Behavioral and social sciences
+92,https://www.xenbase.org/entry/,https://www.xenbase.org/entry/static-xenbase/ftpDatafiles.jsp,"Imaging, Neuroscience, Other, Sequence biology"
+93,https://phenome.jax.org/,https://phenome.jax.org/,"Behavioral and social sciences, Computational biology, Neuroscience, Sequence biology"
+94,https://nidagenetics.org/,https://nidagenetics.org/instructions-for-access-to-data-and-biomaterials/,"Behavioral and social sciences, Neuroscience, Sequence biology"
+95,https://www.icpsr.umich.edu/web/pages/NAHDAP/index.html,https://www.icpsr.umich.edu/web/pages/NAHDAP/data/index.html,"Behavioral and social sciences, Clinical research, Other"
+96,https://scorch.igs.umaryland.edu/,https://nemoarchive.org/data/,Sequence biology
+97,https://neuinfo.org/,https://neuinfo.org/data/search?q=*&l=#all,"Behavioral and social sciences, Imaging, Neuroscience, Sequence biology"
+98,https://aphasia.talkbank.org/,https://aphasia.talkbank.org/,"Behavioral and social sciences, Clinical research"
+99,https://fluency.talkbank.org,https://fluency.talkbank.org,"Behavioral and social sciences, Clinical research, Neuroscience"
+100,http://www.candidagenome.org/,http://www.candidagenome.org/help/GettingStarted.shtml,Sequence biology
+101,https://www.homd.org/,https://homd.org/download,Sequence biology
+102,https://www.salivaryproteome.org/,https://www.salivaryproteome.org/public/index.php/Main_Page,"Clinical research, Computational biology, Sequence biology"
+103,https://www.facebase.org/,https://www.facebase.org/access/policies/,"Computational biology, Imaging, Other, Sequence biology"
+104,https://repository.niddk.nih.gov/home/,https://repository.niddk.nih.gov/pages/for_requestors/,"Clinical research, Imaging"
+105,https://dknet.org/,https://dknet.org/,"Behavioral and social sciences, Clinical research, Computational biology, Sequence biology"
+106,www.hugeamp.org,https://hugeamp.org/,Sequence biology
+107,https://cebs.niehs.nih.gov/cebs/,all data are public; this is HELP: https://cebs.niehs.nih.gov/cebs/help,Other
+108,https://www.glygen.org/,https://data.glygen.org,"Other, Sequence biology"
+109,http://www.cellimagelibrary.org/home,http://www.cellimagelibrary.org/images/advanced_search,"Computational biology, Imaging, Neuroscience"
+110,https://bmrb.io/,https://bmrb.io/search/query_grid/,Imaging
+111,https://www.bindingdb.org/rwd/bind/index.jsp,undefined,"Computational biology, Other"
+112,http://redfly.ccr.buffalo.edu/index.php,undefined,"Computational biology, Sequence biology"
+113,http://www.peptideatlas.org,http://www.peptideatlas.org/builds/,"Computational biology, Sequence biology"
+114,https://bioportal.bioontology.org/,https://bioportal.bioontology.org/login?redirect=https%3A%2F%2Fbioportal.bioontology.org%2Frecommender,Computational biology
+115,https://www.nimhgenetics.org/,https://www.nimhgenetics.org/request-access/how-to-request-access,"Behavioral and social sciences, Clinical research, Neuroscience, Sequence biology"
+116,https://dabi.loni.usc.edu/,https://dabi.loni.usc.edu/,Neuroscience
+117,https://www.ninds.nih.gov/current-research/research-funded-ninds/clinical-research/archived-clinical-research-datasets,https://www.ninds.nih.gov/current-research/research-funded-ninds/clinical-research/archived-clinical-research-datasets,Clinical research
+118,https://pdbp.ninds.nih.gov/,https://pdbp.ninds.nih.gov/how-to-guide,"Behavioral and social sciences, Clinical research, Imaging, Neuroscience, Sequence biology"
+119,https://amp-pd.org/,https://amp-pd.org/register-for-amp-pd,"Behavioral and social sciences, Clinical research, Computational biology, Neuroscience, Sequence biology"
+120,https://odc-tbi.org/,https://odc-tbi.org/,Neuroscience
+121,https://www.ncbi.nlm.nih.gov/gap/,https://dbgap.ncbi.nlm.nih.gov/aa/wga.cgi?page=login,"Behavioral and social sciences, Clinical research, Computational biology, Imaging, Neuroscience, Other, Sequence biology"
+122,https://www.ncbi.nlm.nih.gov/clinvar/,https://www.ncbi.nlm.nih.gov/clinvar/docs/maintenance_use/,Sequence biology
+123,https://www.ncbi.nlm.nih.gov/genbank/,https://www.ncbi.nlm.nih.gov/genbank/,Sequence biology
+124,https://www.ncbi.nlm.nih.gov/geo/,https://www.ncbi.nlm.nih.gov/geo/info/faq.html#retrievals,Sequence biology
+125,https://pubchem.ncbi.nlm.nih.gov/,https://pubchem.ncbi.nlm.nih.gov/doc/,"Computational biology, Neuroscience, Other, Sequence biology"
+126,https://www.ncbi.nlm.nih.gov/snp/,https://www.ncbi.nlm.nih.gov/snp/docs/entrez_help/,"Clinical research, Computational biology, Other, Sequence biology"
+127,https://www.ncbi.nlm.nih.gov/gtr/,https://www.ncbi.nlm.nih.gov/gtr/docs/maintenance_use/,"Other, Sequence biology"
+128,https://www.ncbi.nlm.nih.gov/dbvar/,https://www.ncbi.nlm.nih.gov/dbvar,"Clinical research, Computational biology, Sequence biology"
+129,https://www.ncbi.nlm.nih.gov/snp/docs/gsr/alfa/,https://www.ncbi.nlm.nih.gov/snp/docs/gsr/alfa/#data_access,"Clinical research, Computational biology"
+130,https://www.ncbi.nlm.nih.gov/sra/,https://www.ncbi.nlm.nih.gov/sra/docs/sradownload/,"Computational biology, Sequence biology"
+131,https://clinicaltrials.gov/,https://clinicaltrials.gov/ct2/about-site/terms-conditions#Availability,Clinical research
+132,https://dpcpsi.nih.gov/onr/onr-nutrition-science-data-and-biospecimen-resources-portal,undefined,"Behavioral and social sciences, Clinical research, Computational biology, Imaging, Neuroscience, Other, Sequence biology"
