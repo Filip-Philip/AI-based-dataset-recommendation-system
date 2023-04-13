@@ -1,4 +1,7 @@
 from abc import ABC,abstractmethod
+from dataclasses.DataCluster import DataCluster
+from dataclasses.EmbeddingBase import EmbeddingBase
+
 
 class ParserBase(ABC):
     @abstractmethod
@@ -6,7 +9,7 @@ class ParserBase(ABC):
         raise NotImplementedError
         
     @abstractmethod
-    def download(self, *args, **kwargs)-> dict: 
+    def download(self, *args, **kwargs)-> DataCluster: 
         raise NotImplementedError
     
     @abstractmethod
@@ -18,7 +21,7 @@ class ParserBase(ABC):
         raise NotImplementedError
     
     @abstractmethod
-    def create_embedding(self, *args, **kwargs):
+    def create_embedding(self, *args, **kwargs) -> EmbeddingBase:
         raise NotImplementedError
     
     
