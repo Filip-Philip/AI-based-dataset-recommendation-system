@@ -16,7 +16,9 @@ class ParserBase(ABC):
     @abstractmethod
     def should_update(self, *args, **kwargs) -> bool:
         raise NotImplementedError
-        
-    f
+    
+    @abstractmethod
+    def create_embedding(self, *args, **kwargs):
+        raise NotImplementedError
     
     
