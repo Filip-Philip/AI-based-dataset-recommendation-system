@@ -1,9 +1,9 @@
 from typing import Dict
 from datetime import datetime
 from pathlib import Path
+#deprecated
 class DataCluster:
-    def __init__(self,data:Dict,timestamp:datetime):
-        self.timestamp = timestamp
+    def __init__(self,data:Dict):
         self.data = data
     def __init__(self,filepath:Path):
         #load from specified file 

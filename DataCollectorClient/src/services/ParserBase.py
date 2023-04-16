@@ -1,6 +1,7 @@
 from abc import ABC,abstractmethod
 from dataclasses.DataCluster import DataCluster
 from dataclasses.EmbeddingBase import EmbeddingBase
+from pandas import DataFrame
 
 
 class ParserBase(ABC):
@@ -9,7 +10,13 @@ class ParserBase(ABC):
         raise NotImplementedError
         
     @abstractmethod
-    def download(self, *args, **kwargs)-> DataCluster: 
+    def download(self, *args, **kwargs)-> DataFrame: 
+        raise NotImplementedError
+   
+   
+    """__summary__ = """ 
+    @abstractmethod
+    def convert(self, *args, **kwargs) -> DataFrame:
         raise NotImplementedError
     
     @abstractmethod
