@@ -2,15 +2,17 @@ from datetime import datetime
 import requests
 from ParserBase import ParserBase
 from dataclasses.DataCluster import DataCluster
+import pandas as pd
 
 #convert code from scraping_dryad.ipynb to class extending ParserBase.py
 class DryadParser(ParserBase):
-           
     def __init__(self, url = "https://datadryad.org/api/v2/search"):
         self.url = url
-        pass
+        self.data = None
+        self.data_dict = None
+        pass 
     
-    def download(self, query="Neuroscience", page=1, per_page=100) -> DataCluster:
+    def download(self, query="Neuroscience", page=1, per_page=100):
         dryad_metadata = []
         page = 1
         while True:
@@ -22,7 +24,9 @@ class DryadParser(ParserBase):
                 break
             dryad_metadata.extend(response_json['_embedded']["stash:datasets"])
             page += 1
-        return DataCluster(datetime.now(),dryad_metadata) #should reconsider datetime.now() as timestamp, maybe use last updated date from dryad ...
+        self.data_dict = dryad_metadata
+        self.data = self.to_dataframe(dryad_metadata) 
     
-    
-    
+    def filter_out(self,data:pd.DataFrame, in_place=False *args, **kwargs):
+        return data.drop(['_links','versionNumber', 'versionChanges'], axis=1, inplace=in_place)
+

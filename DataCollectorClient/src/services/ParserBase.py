@@ -9,14 +9,18 @@ class ParserBase(ABC):
     @abstractmethod
     def __init__(self):
         raise NotImplementedError
-        
+
+    @abstractmethod 
+    def load(self,path):
+        pass
+     
     @abstractmethod
-    def download(self, *args, **kwargs)-> DataFrame: 
+    def download(self, *args, **kwargs): 
         raise NotImplementedError
     @abstractmethod 
     def filter_out(self, *args, **kwargs) -> DataFrame:
         raise NotImplementedError
-      
+    
     @abstractmethod
     def convert(self, *args, **kwargs) -> DataFrame:
         raise NotImplementedError
@@ -33,7 +37,8 @@ class ParserBase(ABC):
     def create_embedding(self, *args, **kwargs) -> EmbeddingBase:
         raise NotImplementedError
     
-     
     def to_pickle(self, *args, **kwargs) -> bytes:
         return pickle.dumps(self) 
     
+    def to_dataframe(self, data:dict) -> DataFrame:
+        return DataFrame(data)

@@ -6,7 +6,7 @@ import pandas as pd
 import pickle
 from typing import Dict
 from datetime import datetime
-from parser_base import ParserBase
+from ParserBase import ParserBase
 
 
 class PennsieveParser(ParserBase):
