@@ -6,6 +6,8 @@ from pandas import DataFrame
 
 
 class ParserBase(ABC):
+    BASE_COLUMN_NAMES = ["doi", "download_time", "title", "authors", "description", "tags", "filetypes"]
+
     @abstractmethod
     def __init__(self):
         raise NotImplementedError
@@ -17,6 +19,7 @@ class ParserBase(ABC):
     @abstractmethod
     def download(self, *args, **kwargs): 
         raise NotImplementedError
+
     @abstractmethod 
     def filter_out(self, *args, **kwargs) -> DataFrame:
         raise NotImplementedError
@@ -36,7 +39,6 @@ class ParserBase(ABC):
     @abstractmethod
     def create_embedding(self, *args, **kwargs) -> EmbeddingBase:
         raise NotImplementedError
-    
     def to_pickle(self, *args, **kwargs) -> bytes:
         return pickle.dumps(self) 
     
