@@ -10,7 +10,8 @@ from ParserBase import ParserBase
 
 
 class PennsieveParser(ParserBase):
-    ORIGINAL_COLUMN_NAMES = ["doi", "download_time", "name", "contributors", "description", "tags", "filetypes"]
+    ORIGINAL_COLUMN_NAMES = ["doi", "download_time", "createdAt", "updatedAt", "version", "name",
+                             "contributors", "description", "tags", "filetypes", "filepaths"]
 
     def __init__(self):
         self.data = pd.DataFrame()
@@ -32,7 +33,7 @@ class PennsieveParser(ParserBase):
 
         self.data.append(pd.DataFrame.from_records(datasets))
 
-    def filter_out(self):
+    def filter_out(self) -> pd.DataFrame:
         return self.data[self.ORIGINAL_COLUMN_NAMES]
 
     def convert(self) -> Dict:  # {pennsieve_df_column_name -> general_df_column_name}
