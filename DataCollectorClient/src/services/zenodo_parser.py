@@ -96,10 +96,6 @@ class ZenodoParser(ParserBase):
     def should_update(self, *args, **kwargs) -> bool:
         return False
 
-    def load(self, path):
-        with open(path, 'rb') as file:
-            return pickle.load(file)
-
     def update(self, older_than: datetime) -> None:
         if older_than > self.last_updated:
             self.download()
@@ -119,7 +115,7 @@ class ZenodoParser(ParserBase):
 
 if __name__ == "__main__":
     parser = ZenodoParser()
-    parser.download_all()
-    parser.save("pickle_test_all2.pickle")
-    # print(len(parser.load("pickle_test_all.pickle").data))
+    # parser.download_all()
+    # parser.save("pickle_test_all2.pickle")
+    print(len(parser.load("pickle_test_all2.pickle").data))
 

@@ -13,9 +13,9 @@ class ParserBase(ABC):
     def __init__(self):
         raise NotImplementedError
 
-    @abstractmethod 
     def load(self, path):
-        pass
+        with open(path, 'rb') as file:
+            return pickle.load(file)
      
     @abstractmethod
     def download(self, *args, **kwargs): 

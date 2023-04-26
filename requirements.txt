@@ -9,3 +9,5 @@ uri-template==1.2.0
 virtualenv==20.21.0
 webcolors==1.12
 hubmap-api-py-client==0.0.9
+python-dotenv~=1.0.0
+numpy~=1.24.2
