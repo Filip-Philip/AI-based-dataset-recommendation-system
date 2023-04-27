@@ -16,7 +16,12 @@ class ParserBase(ABC):
     def load(self, path):
         with open(path, 'rb') as file:
             return pickle.load(file)
+    
+    def debug_log(self,debug, message):
+        if debug:
+            print("DEBUG LOG:",message)
      
+    
     @abstractmethod
     def download(self, *args, **kwargs): 
         raise NotImplementedError
