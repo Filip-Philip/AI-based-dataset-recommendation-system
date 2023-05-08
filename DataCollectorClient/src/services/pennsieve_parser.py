@@ -8,6 +8,7 @@ from typing import Dict
 from datetime import datetime
 from ParserBase import ParserBase
 import numpy as np
+from ParserBase import COUNT, SIZES, PATHS, update_files_data
 
 
 def get_file_data(datasets):
@@ -20,28 +21,21 @@ def get_file_data(datasets):
         if type(response.json()) == dict:
             files = response.json()["files"]
             files_data = dict()
+            filetypes = set()
             for file in files:
                 filetype = file.get("fileType", "")
-                count = files_data.get(f"{filetype}_count", 0)
-                sizes = files_data.get(f"{filetype}_sizes", [])
-                paths = files_data.get(f"{filetype}_paths", [])
+                filetypes.add(filetype)
+                count = files_data.get(f"{filetype}_{COUNT}", 0)
+                sizes = files_data.get(f"{filetype}_{SIZES}", [])
+                paths = files_data.get(f"{filetype}_{PATHS}", [])
                 count += 1
                 sizes.append(file.get("size", 0))
                 paths.append(file.get("path", ""))
-                files_data[f"{filetype}_count"] = int(count)
-                files_data[f"{filetype}_sizes"] = sizes
-                files_data[f"{filetype}_paths"] = paths
+                files_data[f"{filetype}_{COUNT}"] = int(count)
+                files_data[f"{filetype}_{SIZES}"] = sizes
+                files_data[f"{filetype}_{PATHS}"] = paths
 
-            filetypes = set()
-            for filetype in files_data.keys():
-                filetypes.add(filetype.split("_")[0])
-
-            for filetype in filetypes:
-                sizes = files_data.pop(f"{filetype}_sizes")
-                mean_size = sum(sizes) / files_data[f"{filetype}_count"]
-                files_data[f"{filetype}_mean_size"] = mean_size
-                std_size = np.sqrt(sum((np.array(sizes) - np.ones(len(sizes)) * mean_size) ** 2) / len(sizes))
-                files_data[f"{filetype}_std_size"] = std_size
+            files_data = update_files_data(files_data, filetypes)
 
             dataset |= files_data
 

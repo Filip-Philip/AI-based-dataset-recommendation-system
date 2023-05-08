@@ -5,12 +5,13 @@ import json
 import pandas as pd
 from typing import List
 import pickle
-from typing import Dict
+from typing import Dict, Set
 # from datetime import datetime
 from ParserBase import ParserBase
 from dotenv import load_dotenv
 import os
 from collections import Counter
+from ParserBase import COUNT, SIZES, PATHS, update_files_data, save_json
 
 load_dotenv("environment.env")
 ACCESS_TOKEN = os.getenv("ZENODO_KEY")
@@ -26,14 +27,29 @@ def unpack_metadata(dataset_list):
     return dataset_list
 
 
-# def gather_filetypes_and_paths(dataset_list):
-#     for dataset in dataset_list:
-#         filetypes_list = [file["type"] for file in dataset.get("files", [])]
-#         filepaths = [file["links"]["self"] for file in dataset.get("files", [])]
-#         filetypes_dict = Counter(filetypes_list)
-#         dataset["filetypes"] = filetypes_dict
-#         dataset["filepaths"] = filepaths
-#     return dataset_list
+def get_file_data(datasets):
+    for dataset in datasets:
+        files = dataset.get("files", [])
+        files_data = dict()
+        filetypes = set()
+        for file in files:
+            filetype = file.get("type", "")
+            filetypes.add(filetype)
+            count = files_data.get(f"{filetype}_{COUNT}", 0)
+            sizes = files_data.get(f"{filetype}_{SIZES}", [])
+            paths = files_data.get(f"{filetype}_{PATHS}", [])
+            count += 1
+            sizes.append(file.get("size", 0))
+            paths.append(file.get("links", dict()).get("self", ""))
+            files_data[f"{filetype}_{COUNT}"] = int(count)
+            files_data[f"{filetype}_{SIZES}"] = sizes
+            files_data[f"{filetype}_{PATHS}"] = paths
+
+        files_data = update_files_data(files_data, filetypes)
+
+        dataset |= files_data
+
+    return datasets
 
 
 class ZenodoParser(ParserBase):
@@ -62,11 +78,20 @@ class ZenodoParser(ParserBase):
                                             'type': 'dataset'})
 
         if response.status_code == STATUS_OK:
+        # for filename in os.scandir("../../../data/Zenodo/backup_jsons"):
+        #     with open("../../../data/Zenodo/backup_jsons/" + filename.name, "r") as file:
+        #         response_json = json.loads(file.read())
+
             response_json = response.json()
+            json_object = json.dumps(response_json)
+
+            save_json("Zenodo", json_object, start_date, end_date)
+
             self.last_updated = datetime.datetime.now()
             datasets = response_json["hits"]["hits"]
             datasets = unpack_metadata(datasets)
-            datasets = self.__gather_filetypes_and_paths(datasets)
+            # datasets = self.__gather_filetypes_and_paths(datasets)
+            datasets = get_file_data(datasets)
 
             time_column_name = self.ORIGINAL_COLUMN_NAMES[1]
             for dataset in datasets:
@@ -75,7 +100,8 @@ class ZenodoParser(ParserBase):
             self.data = pd.concat([self.data, pd.DataFrame.from_records(datasets)])
 
     def download_all(self) -> None:
-        start_date = datetime.datetime(ZENODO_CREATED_YEAR, ZENODO_CREATED_MONTH, 1).date()
+        start_date = datetime.datetime(2019, 4, 24).date()
+        # start_date = datetime.datetime(ZENODO_CREATED_YEAR, ZENODO_CREATED_MONTH, 1).date()
         end_date = start_date + datetime.timedelta(weeks=+self.DOWNLOAD_PERIOD_WEEKS)
         while start_date < datetime.datetime.now().date():
             start_date_string = start_date.strftime('%Y-%m-%d')
@@ -115,7 +141,11 @@ class ZenodoParser(ParserBase):
 
 if __name__ == "__main__":
     parser = ZenodoParser()
-    # parser.download_all()
-    # parser.save("pickle_test_all2.pickle")
-    print(len(parser.load("pickle_test_all2.pickle").data))
+    # parser.download()
+    parser.download_all()
+    parser.save("pickle_test_all_with_files_2.pickle")
+    # dat = parser.load("pickle_test_all_with_files.pickle").data
+    # dat_records = dat.loc[2]
+    # print(dat_records)
+
 
