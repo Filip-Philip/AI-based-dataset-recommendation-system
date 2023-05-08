@@ -67,13 +67,10 @@ class DryadParser(ParserBase):
 
 if __name__ == "__main__":
     dp = DryadParser()
-    dp = dp.load("dryad")
-    dp_conv = dp.load("dryad_converted")
-        
-    #dp.download(debug=True)
-    #dp.save( "dryad")
-    #dp.data = dp.convert(dp.data)
-    #dp.save("dryad_converted") 
-    print(dp.data.head())
-    print(dp_conv.data.head())
+    dp.download(debug=True)
+    dp.save( "dryad")
+    dp.data = dp.convert(dp.data)
+    dp.save("dryad_converted") 
+    
+    print(dp.data)
     

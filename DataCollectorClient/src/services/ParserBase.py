@@ -19,9 +19,8 @@ class ParserBase(ABC):
     
     def debug_log(self,debug, message):
         if debug:
-            print("DEBUG LOG:",message)
-     
-    
+            print("DEBUG {} LOG: {}".format(self.__class__,message))
+         
     @abstractmethod
     def download(self, *args, **kwargs): 
         raise NotImplementedError
