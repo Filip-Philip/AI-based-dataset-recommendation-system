@@ -44,18 +44,19 @@ class ParserBase(ABC):
     def debug_log(self,debug, message):
         if debug:
             print("DEBUG {} LOG: {}".format(self.__class__,message))
-         
+
     @abstractmethod
     def download(self, *args, **kwargs): 
         raise NotImplementedError
 
-    @abstractmethod 
-    def filter_out(self, *args, **kwargs) -> DataFrame:
-        raise NotImplementedError
+    def filter_out(self,data:DataFrame, in_place=False):
+        return self.data[self.ORIGINAL_COLUMN_NAMES]
     
-    @abstractmethod
-    def convert(self, *args, **kwargs) -> DataFrame:
-        raise NotImplementedError
+    def convert(self, data:DataFrame, in_place=False):
+        filtered = self.filter_out(data)
+        column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES,self.BASE_COLUMN_NAMES))
+        filtered = filtered.rename(columns=column_name_map)
+        return filtered
     
     @abstractmethod
     def update(self, *args, **kwargs):
