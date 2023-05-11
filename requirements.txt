@@ -2,7 +2,7 @@ fqdn==1.5.1
 isoduration==20.11.0
 jsonpointer==2.3
 jupyter==1.0.0
-pandas==1.5.3
+pandas==2.0.1
 pip-chill==1.0.1
 requests==2.28.2
 uri-template==1.2.0

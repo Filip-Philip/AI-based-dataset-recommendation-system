@@ -5,12 +5,21 @@ import pickle
 from pandas import DataFrame
 from typing import Dict, Set
 import numpy as np
+import pandas as pd
 
 STD_SIZE = "std_size"
 MEAN_SIZE = "mean_size"
 COUNT = "count"
 SIZES = "sizes"
 PATHS = "paths"
+OTHER = "other"
+SPARSE_CONVERSION_CONSTANT = 0.3
+
+
+def to_sparse(x):
+    if x.isna().sum() / len(x) > SPARSE_CONVERSION_CONSTANT:
+        return pd.arrays.SparseArray(x)
+    return x
 
 
 def update_files_data(files_data: Dict, filetypes: Set) -> Dict:
@@ -44,7 +53,7 @@ class ParserBase(ABC):
     def debug_log(self,debug, message):
         if debug:
             print("DEBUG {} LOG: {}".format(self.__class__,message))
-         
+
     @abstractmethod
     def download(self, *args, **kwargs): 
         raise NotImplementedError
