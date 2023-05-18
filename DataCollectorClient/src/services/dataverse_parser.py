@@ -50,7 +50,7 @@ class DataverseParser(ParserBase):
     BASE_COLUMN_NAMES = ["doi", "download_time", "created", "updated", "version", "title",
                         "authors", "description", "tags", "filetypes", "filepaths"]
     ORIGINAL_COLUMN_NAMES = ["global_id","download_time", "createdAt", "updatedAt", "versionId", "name", 
-                             "authors", "publications", "keywords", "filetypes", "filepaths"]
+                             "authors", "description", "keywords", "filetypes", "filepaths"]
     
     """
     [
@@ -85,7 +85,7 @@ class DataverseParser(ParserBase):
                 lodaded +=1
         print("Loaded: " + str(lodaded) + " errored: " + str(errored))
                     
-    def download_file_information(self, only_missing:bool = True):
+    def download_dataset_details(self, only_missing:bool = True):
         #load excluded dois
         excluded_dois = set()
         if os.path.exists(self.base_dir + "excluded_dois.txt"):
@@ -150,6 +150,16 @@ class DataverseParser(ParserBase):
         self.data_dict = dataverse_metadata
         self.data = self.to_dataframe(dataverse_metadata) 
     
+    def export_scibert_input(self, name:str = "scibert_input"):
+        #export to json file
+        self.data[["doi", "title", "description","tags"]].to_json(self.base_dir + name + ".json", orient="records")
+    
+    def load_scibert_input(self, name:str = "scibert_input"):
+        #load from json file
+        self.data = pd.read_json(self.base_dir + name + ".json", orient="records")
+        #merge title, description and tags
+        
+    
     def filter_out(self,data:pd.DataFrame, in_place=False):
         return self.data[self.ORIGINAL_COLUMN_NAMES]
     
@@ -191,7 +201,7 @@ if __name__ == "__main__":
     dp = DataverseParser()
     #dp.download(debug=True)
     #dp.save( "dataverse")
-    dp = dp.load(dp.base_dir+"dataverse")
+    dp : DataverseParser = dp.load(dp.base_dir+"dataverse")
 
     #generate brief report about this dataframe
     
@@ -214,14 +224,20 @@ if __name__ == "__main__":
     """
     
     dp.data =dp.convert(dp.data)
+    dp.export_scibert_input() 
     
     """dp_withfiles = dp.get_filetype_information(dp_converted, "doi")
     dp.data = dp_withfiles
     dp.save( "dataverse_withfiles")
     print(dp_withfiles["files"].head())
     """
+    #dp.load_file_information() 
+    #dp.download_file_information()
+    #drop records with empty or very short descriptions
+    #dp.data = dp.data[dp.data["description"].str.len() > 10]
     
-    dp.download_file_information()
-
-    
-    
+    #plot histogram of description lengths and assign axes labels limit x axis to 1000    
+    #plt.hist(dp.data["description"].str.len(), bins=1000)
+    #plt.xlabel("Description length")
+    #plt.ylabel("Number of records")
+    #plt.xlim(0,1000)
