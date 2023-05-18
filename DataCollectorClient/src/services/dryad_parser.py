@@ -49,7 +49,11 @@ class DryadParser(ParserBase):
     def filter_out(self,data:pd.DataFrame, in_place=False):
         #return data.drop(['_links','versionNumber', 'versionChanges'], axis=1, inplace=in_place)
         return
-    
+   
+    def download_file_information(self, *args, **kwargs) -> None:
+        #TODO: implement
+        pass
+     
     def convert(self, data:pd.DataFrame, in_place=False):
         #data = data.rename(columns={'publicationDate': 'publication_date', 'publicationYear': 'publication_year', 'publicationMonth': 'publication_month', 'publicationDay': 'publication_day', 'publicationDateType': 'publication_date_type', 'publicationDateAccuracy': 'publication_date_accuracy', 'publicationDateYearOnly': 'publication_date_year_only', 'publicationDateSeason': 'publication_date_season', 'publicationDateDecade': 'publication_date_decade', 'publicationDateCentury': 'publication_date_century', 'publicationDateDisplay': 'publication_date_display', 'publicationDateFreeform': 'publication_date_freeform', 'publicationDateSort': 'publication_date_sort', 'publicationDateNormalized': 'publication_date_normalized', 'publicationDateNormalizedYear': 'publication_date_normalized_year', 'publicationDateNormalizedMonth': 'publication_date_normalized_month', 'publicationDateNormalizedDay': 'publication_date_normalized_day'}, inplace=in_place)
         return dict(zip(self.ORIGINAL_COLUMN_NAMES,self.BASE_COLUMN_NAMES))

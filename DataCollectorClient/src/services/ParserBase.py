@@ -88,3 +88,10 @@ class ParserBase(ABC):
     
     def to_dataframe(self, data:dict) -> DataFrame:
         return DataFrame(data)
+    
+    """utility functions"""
+    def clean_alt_list(list_: str):
+        list_ = list_.replace(', ', '","')
+        list_ = list_.replace('[', '["')
+        list_ = list_.replace(']', '"]')
+        return list_
