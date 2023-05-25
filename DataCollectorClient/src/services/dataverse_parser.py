@@ -1,4 +1,7 @@
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+import pathlib
+import numpy as np
 import requests
 from tqdm import tqdm
 from ParserBase import ParserBase
@@ -6,15 +9,18 @@ import pandas as pd
 import aiohttp
 import asyncio
 from tqdm.asyncio import tqdm_asyncio
-import time
 import sys
 import os
 import json
+import regex as re
+
+import matplotlib.pyplot as plt
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 # convert code from scraping_dataverse.ipynb to class extending ParserBase.py
-dataverse_key = "7011421a-9032-4c3a-b8bb-242f83c67c66"
+dataverse_key = os.environ.get('DATAVERSE_API_KEY')
+
 async def get_dataverse_info(dois, api_key):
         async with aiohttp.ClientSession() as session:
             tasks = []
@@ -84,44 +90,79 @@ class DataverseParser(ParserBase):
                     data["filepaths"].append(file["dataFile"]["storageIdentifier"])
                 lodaded +=1
         print("Loaded: " + str(lodaded) + " errored: " + str(errored))
-                    
-    def download_dataset_details(self, only_missing:bool = True):
-        #load excluded dois
+    
+
+    
+    #newline delimited json                
+    def download_dataset_details(self, only_missing:bool = True, result_filename:str= None):
+         
+        def get_already_downloaded():
+            regex_doi = re.Regex("doi\"\: \"([^\"]*)\"")
+            already_downloaded = set()
+            with open(result_filename, "r") as f:
+                for line in f:
+                    #find with regex \"doi\"\: \"([^\"]*)\"
+                    already_downloaded.add( regex_doi.search(line).group(1))
+            return already_downloaded
+        
         excluded_dois = set()
+        result_filename = self.base_dir +"files_info/"+  ( result_filename if result_filename is None else "responses.ndjson")
+                
+        
+        #load already downloaded dois
+        if os.path.exists(result_filename) and only_missing:
+            excluded_dois.update(get_already_downloaded())
+        
+        #load excluded dois
         if os.path.exists(self.base_dir + "excluded_dois.txt"):
             with open(self.base_dir + "excluded_dois.txt", "r") as f:
                 for i in f.read().splitlines():
                     excluded_dois.add(i)
          
         dois = self.data["doi"].tolist()
-        if only_missing:
-            dois = [doi for doi in dois if (not os.path.exists(self.base_dir + "files_info/" + doi.replace("/", "_").replace(":", "-") + ".json") and doi not in excluded_dois)]
+        dois = [i for i in dois if i not in excluded_dois]
+        
         chunk_size = 1000
         chunks = [dois[i:i + chunk_size] for i in range(0, len(dois), chunk_size)]
         chunk_num = 0
+
         for chunk in tqdm_asyncio(chunks):
             try:
                 responses = get_dataverse_files(chunk, dataverse_key)
 
             except Exception as e:
                 print(e)
-            #SAVE RESPONSES TO JSON FILES
-            for response in responses:
-                if response is None:
-                    continue
-                try:
-                    identification_code = response["data"]["protocol"] + ":" + response["data"]["authority"] + "/" + response["data"]["identifier"]
-                    f_path = self.base_dir + "files_info/" +identification_code.replace(":","-").replace("/","_")+ ".json"
-                    with open(f_path, "w") as f:
-                        json.dump(response, f)          
-                except OSError as e:
-                    #print whole exception information
-                    print(e)
-                    break
-                except KeyError as e:
-                    print(e)
-                    print(response)
-                    continue 
+            #Append responses to one large json file
+            with open(result_filename, "rw") as f:
+                #open log file
+                with open(self.base_dir + "log.txt", "a") as log:
+                    for response in responses:
+                        if response is None:
+                            continue
+                        if "status" in response and response["status"] == "ERROR":
+                            log.write(response["message"] + "\n") 
+                            excluded_dois.add(response["data"]["persistentId"])
+                            continue
+                        
+                        try:
+                            #remove newlines from response
+                            response = json.loads(response.replace("\n", " "))
+                            #add doi as key to response
+                            response["doi"] = response["data"]["protocol"] + ":" + response["data"]["authority"] + "/" + response["data"]["identifier"]
+                            #add date of download
+                            response["download_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            #add response to file 
+                            f.write(json.dumps(response, allow_nan=True, indent=None) + "\n")
+
+                        except OSError as e:
+                            #print whole exception information
+                            print(e)
+                            break
+                        except KeyError as e:
+                            print(e)
+                            print(response)
+                            continue 
+
     def download(self, query="Neuroscience", start=1, per_page=1000, debug=False):
         dataverse_metadata = []
         start = 1
@@ -177,7 +218,7 @@ class DataverseParser(ParserBase):
         data_tmp["title"] = data["title"].astype(str)
         #convert authors to list of strings
         return data_tmp  
-         
+     
     def convert(self, data:pd.DataFrame, in_place=False):
         filtered = self.filter_out(data)
         column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES,self.BASE_COLUMN_NAMES))
@@ -190,8 +231,6 @@ class DataverseParser(ParserBase):
     def should_update(self, *args, **kwargs) -> bool:
         return False
     
-    
-    
     def update(self, *args, **kwargs):
         pass
     
@@ -201,12 +240,67 @@ if __name__ == "__main__":
     dp = DataverseParser()
     #dp.download(debug=True)
     #dp.save( "dataverse")
-    dp : DataverseParser = dp.load(dp.base_dir+"dataverse")
+    dp : DataverseParser = dp.load(dp.base_dir+"dataverse_w_filetypes")
 
     #generate brief report about this dataframe
     
     print(dp.base_dir)
     
+    dict_of_filetypes_count = {}
+    dict_of_filetypes_size = {}
+    
+    #open ndjson file as stream over lines
+    def load_filetypes_from_dp():
+        dict_of_filetypes_count = dp.dict_of_filetypes_count
+        dict_of_filetypes_size = dp.dict_of_filetypes_size
+        
+    def load_filetypes_from_responses():
+        with open(dp.base_dir + "combined_responses.ndjson", "r") as f:
+            #iterate over all lines load json
+            for line in tqdm(f):
+                line = json.loads(line)
+                #line is a dict with "data" and "doi" as keys
+                doi = line["doi"]
+                #iterate over all files
+                try:
+                    line["data"]["latestVersion"]["files"]
+                except KeyError as e:
+                    print(e)
+                    print(line)
+                    continue 
+                
+                for file in line["data"]["latestVersion"]["files"]:
+                    f_format = file["dataFile"]["contentType"]
+                    dict_of_filetypes_count[f_format] = dict_of_filetypes_count.get(f_format, 0) + 1
+                    dict_of_filetypes_size[f_format] = dict_of_filetypes_size.get(f_format, 0) + file["dataFile"]["filesize"]
+    
+    load_filetypes_from_dp()
+
+    #print all filetypes and their count
+
+    dp.dict_of_filetypes_count = dict_of_filetypes_count
+    dp.dict_of_filetypes_size = dict_of_filetypes_size
+
+    #sort both dics by value and plot them as bar chart
+    dict_of_filetypes_count = dict(sorted(dict_of_filetypes_count.items(), key=lambda item: item[1], reverse=True))
+    dict_of_filetypes_size = dict(sorted(dict_of_filetypes_size.items(), key=lambda item: item[1], reverse=True))
+
+    for dicter in [dict_of_filetypes_count, dict_of_filetypes_size]:
+        print("dicter")
+        for key, value in dicter.items():
+            print(key, value)
+    
+    #plot only top 50 filetypes
+    dict_of_filetypes_count = dict(list(dict_of_filetypes_count.items())[:50])
+    dict_of_filetypes_size = dict(list(dict_of_filetypes_size.items())[:50])
+    
+    #plot both dicts as bar chart horizontally
+    fig, ax = plt.subplots(1,2, figsize=(10,10))
+    ax[0].barh(list(dict_of_filetypes_count.keys()), list(dict_of_filetypes_count.values()))
+    ax[0].set_title("Filetypes count")
+    ax[1].barh(list(dict_of_filetypes_size.keys()), list(dict_of_filetypes_size.values()))
+    ax[1].set_title("Filetypes size")
+    plt.show()
     """
     print(dp.data.info())
     print(dp.data.head())
@@ -223,9 +317,14 @@ if __name__ == "__main__":
         print(col,'\n',dp.data[col].dropna().head(2),'\n\n')  
     """
     
-    dp.data =dp.convert(dp.data)
-    dp.export_scibert_input() 
+    #dp.data =dp.convert(dp.data)
+    #dp.export_scibert_input() 
     
+    #convert files from files_info to  one ndjson format file with doi and download time
+    #iterate over all files in directory
+    
+    
+        
     """dp_withfiles = dp.get_filetype_information(dp_converted, "doi")
     dp.data = dp_withfiles
     dp.save( "dataverse_withfiles")
@@ -241,3 +340,56 @@ if __name__ == "__main__":
     #plt.xlabel("Description length")
     #plt.ylabel("Number of records")
     #plt.xlim(0,1000)
+"""
+    def axe( paths:list[str], id:int ):
+        print("running axe with id: " + str(id) + " and " + str(len(paths)) + " files")
+        with open(base_dir + "files"+str(id)+".ndjson", "w") as f:
+            for entry in paths:
+                with open(entry, "r") as small_file:
+                    if small_file is None:
+                        print("Error: could not open file: " + entry.path)
+                        continue
+                    if small_file.read() == "":
+                        print("Error: file is empty: " + entry.path)
+                        continue
+                    small_file.seek(0)
+                    if small_file.read() == "null":
+                        print("Error: file is null: " + entry.path)
+                        continue
+                    small_file.seek(0)
+                    try:
+                        
+                        small_file_json = json.load(small_file)
+                        #remove newline characters in json
+                        small_file_json = {k: v.replace("\n", " ") if isinstance(v, str) else v for k, v in small_file_json.items()} 
+                        small_file_json["doi"] = small_file_json["data"]["protocol"] + ":" + small_file_json["data"]["authority"] + "/" + small_file_json["data"]["identifier"]
+                        #add date of download
+                        small_file_json["download_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        #add response to file 
+                        f.write(json.dumps(small_file_json, allow_nan=True, indent=None) + "\n")
+                    except json.decoder.JSONDecodeError as e:
+                        print("Error: could not parse json: " + entry.path)
+                        print(e)
+                        exit(1)
+
+    def json_pick():
+        with open(dp.base_dir + "responses.ndjson", "w") as result_file:
+            with os.scandir(dp.base_dir + "files_info") as dir:
+                #run this concurrently with 8 threads 
+                with ThreadPoolExecutor(max_workers=8) as executor:
+                    #iterate over all files in directory
+                    #add semaphore t
+                    #split files into 8 chunks
+                    dir_chunks = np.array_split(list(dir), 8)
+                    futures = []
+                    iterator = 1
+                    for entry in tqdm(dir_chunks):  
+                        #submit each chunk to executor 
+                        futures.append(executor.submit(axe, entry, iterator ))
+                        iterator+=1 
+                    #wait for all futures to finish
+                    for future in tqdm(futures):
+                        future.result()  
+                               
+    json_pick()
+"""
