@@ -7,11 +7,11 @@ from typing import List
 import pickle
 from typing import Dict, Set, Union, Any, KeysView
 # from datetime import datetime
-from ParserBase import ParserBase
+# from ParserBase import ParserBase
 from dotenv import load_dotenv
 import os
 from collections import Counter
-from ParserBase import COUNT, SIZES, PATHS, OTHER, update_files_data, save_json, to_sparse
+from DataCollectorClient.src.services.ParserBase import ParserBase, COUNT, SIZES, PATHS, OTHER, update_files_data, save_json, to_sparse
 import numpy as np
 
 load_dotenv("environment.env")
@@ -139,6 +139,7 @@ class ZenodoParser(ParserBase):
                 else:
                     sparse_this_period_df = this_period_df.apply(to_sparse)
                     self.data = pd.concat([self.data, sparse_this_period_df])
+            break
 
     def download_all(self, preprocess: bool) -> None:
         start_date = datetime.datetime(2021, 8, 11).date()
@@ -219,8 +220,10 @@ if __name__ == "__main__":
     parser = ZenodoParser()
     # parser.download()
     # parser = parser.load("pickle_test_all2.pickle")
-    parser.get_target_data(160)
-    parser.save("pickle_test_all_with_files_sparse.pickle")
+    # parser.get_target_data(160)
+    parser.download_all_from_backup(True)
+    print(parser.data.loc[0])
+    # parser.save("pickle_test_all_with_files_sparse.pickle")
     # dat = parser.load("pickle_test_all2.pickle").data
 
     # dat.astype(dtype)
