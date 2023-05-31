@@ -42,12 +42,33 @@ async def get_data(session, url):
 
 def get_dataverse_files(dois, api_key):
     responses = asyncio.get_event_loop().run_until_complete(get_dataverse_info(dois, api_key))
-
     return responses
+
+def plot_filetypes(ft_count, ft_size, top_n=50):
+        #sort both dics by value and plot them as bar chart
+        ft_count = dict(sorted(ft_count.items(), key=lambda item: item[1], reverse=True))
+        ft_size = dict(sorted(ft_size.items(), key=lambda item: item[1], reverse=True))
+
+        #print number of filetypes which have less than 4 occurernces
+        print("Number of filetypes with less than 4 occurernces: ", len([x for x in ft_count.values() if x < 4]))
+        
+        ft_count = dict(list(ft_count.items())[:top_n])
+        ft_size = dict(list(ft_size.items())[:top_n])
+        
+        #plot both dicts as bar chart horizontally
+        fig, ax = plt.subplots(1,2, figsize=(10,10))
+        ax[0].barh(list(ft_count.keys()), list(ft_count.values()))
+        ax[0].set_title("Filetypes count")
+        ax[1].barh(list(ft_size.keys()), list(ft_size.values()))
+        ax[1].set_title("Filetypes size")
+        plt.show()
+    
+
 
 class DataverseParser(ParserBase):
     # https://guides.dataverse.org/en/5.13/api/search.html
     base_dir = """C:/Users/Luki/Documents/Studia/Inzynierka/AI-based-dataset-recommendation-system/data/Dataverse/"""
+    response_filename = "responses.ndjson"
     def __init__(self, url="https://dataverse.harvard.edu/api/search"):
         self.url = url
         self.data = None
@@ -69,6 +90,69 @@ class DataverseParser(ParserBase):
        'keywords', 'geographicCoverage', 'dataSources', 'relatedMaterial'
     ]
     """
+
+    """                 """
+    """LOW LEVEL METHODS""" 
+    """                 """
+    def load_filetypes_from_responses_file(self, response_file_name: str = response_filename,regex=True, load_files_to_data=True):
+        dict_of_filetypes_count = {}
+        dict_of_filetypes_size = {}
+        
+        if response_file_name is None :
+            print("No response file name given")
+            return None
+        
+        def is_valid_file_extension(extension:str):
+            if regex == False:
+                return True 
+            #check if does not contain any special characters is not empty and is not a number and is maximum 10 characters long
+            return re.match(r"^[a-zA-Z0-9]{1,10}$", extension) is not None
+        
+        with open(dp.base_dir + response_file_name, "r") as f:
+            #iterate over all lines load json
+            for line in tqdm(f):
+                line = json.loads(line)
+                #line is a dict with "data" and "doi" as keys
+                doi = line["doi"]
+                #iterate over all files
+                try:
+                    line["data"]["latestVersion"]["files"]
+                except KeyError as e:
+                    print(e)
+                    print(line)
+                    continue 
+                
+                f_name_taken = 0
+                f_format_taken = 0
+                f_storage_taken = 0
+                
+                
+                cur_record = self.data.loc[self.data["doi"] == doi]  
+                if load_files_to_data:
+                    cur_record["files"] = [] 
+                for file in line["data"]["latestVersion"]["files"]:
+                    f_format = file["dataFile"]["filename"]
+                    storage_identifier = file["dataFile"]["storageIdentifier"]
+                    
+                    if "." in f_format and is_valid_file_extension(f_format.split(".")[-1]):
+                        f_format = f_format.split(".")[-1]
+                        f_name_taken+=1
+                    elif "." in storage_identifier and is_valid_file_extension(storage_identifier.split(".")[-1]):
+                        f_format = storage_identifier.split(".")[-1]
+                        f_format_taken +=1
+                    else:
+                        f_format = file["dataFile"]["contentType"]
+                        f_storage_taken +=1
+                    
+                    if load_files_to_data:
+                        cur_record["files"].append({"name": file["dataFile"]["filename"], "type": f_format, "storage": storage_identifier, "size": file["dataFile"]["filesize"]})
+                    
+                    dict_of_filetypes_count[f_format] = dict_of_filetypes_count.get(f_format, 0) + 1
+                    dict_of_filetypes_size[f_format] = dict_of_filetypes_size.get(f_format, 0) + file["dataFile"]["filesize"]
+        print(f_name_taken, f_format_taken, f_storage_taken)
+        return dict_of_filetypes_count, dict_of_filetypes_size
+
+    """DEPRECATED
     def load_file_information(self):
         #load file information from json files and add them to data_dict
         lodaded =0
@@ -90,7 +174,7 @@ class DataverseParser(ParserBase):
                     data["filepaths"].append(file["dataFile"]["storageIdentifier"])
                 lodaded +=1
         print("Loaded: " + str(lodaded) + " errored: " + str(errored))
-    
+    """    
 
     
     #newline delimited json                
@@ -153,7 +237,6 @@ class DataverseParser(ParserBase):
                             response["download_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             #add response to file 
                             f.write(json.dumps(response, allow_nan=True, indent=None) + "\n")
-
                         except OSError as e:
                             #print whole exception information
                             print(e)
@@ -162,12 +245,14 @@ class DataverseParser(ParserBase):
                             print(e)
                             print(response)
                             continue 
-
-    def download(self, query="Neuroscience", start=1, per_page=1000, debug=False):
+    def download_search_results(self, start=1, per_page=1000, debug=False):
         dataverse_metadata = []
         start = 1
-        headers = {"X-Dataverse-key": "b7d3b5a0-5b5a-4b9f-8f9f-3c6b6b6b6b6b"}
+        all =   300000 
+        headers = {"X-Dataverse-key": dataverse_key}
+        progress_bar = None
         while True:
+            
             url : str = self.url +"?q=*&type=dataset&per_page={}&start={}".format(str(per_page),str(start))
             self.debug_log(debug, "Downloading page: " + str(start) + " url: " + url)
             response = requests.get(url, headers=headers)
@@ -181,48 +266,41 @@ class DataverseParser(ParserBase):
             if len(response_json['data']["items"]) == 0:
                 break
             dataverse_metadata.extend(response_json['data']["items"])
-            
+            if start == 1:
+                all = response_json['data']["total_count"] 
+                progress_bar = tqdm(total=all)
             start += per_page
-        for data in dataverse_metadata:
+            progress_bar.update(per_page)
+        progress_bar.close()
+        return dataverse_metadata
+    
+    """                    """
+    """HIGH LEVEL FUNCTIONS"""
+    """                    """
+    def download(self,start=1, per_page=1000, debug=False):
+        print("Downloading metadata from dataverse...")
+        dataverse_metadata = self.download_search_results( start, per_page, debug)
+        print("Downloaded " + str(len(dataverse_metadata)) + " datasets")
+        print("Parsing metadata...")
+     
+        for data in tqdm(dataverse_metadata):
             data["download_time"] = datetime.now()
             data["filetypes"] = []
             data["filepaths"] = []
         
         self.data_dict = dataverse_metadata
-        self.data = self.to_dataframe(dataverse_metadata) 
-    
-    def export_scibert_input(self, name:str = "scibert_input"):
-        #export to json file
-        self.data[["doi", "title", "description","tags"]].to_json(self.base_dir + name + ".json", orient="records")
-    
-    def load_scibert_input(self, name:str = "scibert_input"):
-        #load from json file
-        self.data = pd.read_json(self.base_dir + name + ".json", orient="records")
-        #merge title, description and tags
-        
-    
-    def filter_out(self,data:pd.DataFrame, in_place=False):
-        return self.data[self.ORIGINAL_COLUMN_NAMES]
-    
-    def correct_types(data:pd.DataFrame, in_place=False):
-        #convert columns to correct types
-        data_tmp = data.copy(True)
-        data_tmp["download_time"] = pd.to_datetime(data["download_time"])
-        data_tmp["createdAt"] = pd.to_datetime(data["createdAt"])
-        data_tmp["updatedAt"] = pd.to_datetime(data["updatedAt"])
-        data_tmp["versionId"] = pd.to_numeric(data["versionId"])
-        data_tmp["fileCount"] = pd.to_numeric(data["fileCount"])
-        data_tmp["majorVersion"] = pd.to_numeric(data["majorVersion"])
-        data_tmp["minorVersion"] = pd.to_numeric(data["minorVersion"])
-        data_tmp["doi"] = data["doi"].astype(str)
-        data_tmp["title"] = data["title"].astype(str)
-        #convert authors to list of strings
-        return data_tmp  
-     
+        self.data = self.to_dataframe(dataverse_metadata)
+        self.data = self.convert(self.data)
+        print("Downloading dataset details...")
+        self.download_dataset_details()
+        print("Parsing dataset details...")
+        self.load_filetypes_from_responses_file() 
+
     def convert(self, data:pd.DataFrame, in_place=False):
         filtered = self.filter_out(data)
         column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES,self.BASE_COLUMN_NAMES))
-        filtered = filtered.rename(columns=column_name_map)
+        filtered = filtered.rename(columns=column_name_map) 
+        filtered = self.correct_types(filtered, in_place=in_place)
         return filtered 
     
     def create_embedding(self):
@@ -233,6 +311,47 @@ class DataverseParser(ParserBase):
     
     def update(self, *args, **kwargs):
         pass
+
+    """ UTILITIES """ 
+    def export_scibert_input(self, name:str = "scibert_input"):
+        #export to json file
+        self.data[["doi", "title", "description","tags"]].to_json(self.base_dir + name + ".json", orient="records")
+    
+    def load_scibert_input(self, name:str = "scibert_input"):
+        #load from json file
+        self.data = pd.read_json(self.base_dir + name + ".json", orient="records")
+    
+    def print_records(self, how_many = 2, random = False):
+        print("Printing for each collumn non null records")
+        for col in self.data.columns:
+            #print so it shows whole value and not only first 50 chars
+            pd.set_option('display.max_colwidth', -1)
+            if random:
+                print(col,'\n',dp.data[col].dropna().sample(how_many),'\n\n')
+            else:
+                print(col,'\n',dp.data[col].dropna().head(how_many),'\n\n') 
+    
+    """     TYPES    """
+    def correct_types(data:pd.DataFrame, in_place=False):
+        data_tmp = None
+        #convert columns to correct types
+        if(in_place):
+            data_tmp = data
+        else:
+            data_tmp = data.copy(True)
+        
+        data_tmp["download_time"] = pd.to_datetime(data["download_time"])
+        data_tmp["createdAt"] = pd.to_datetime(data["createdAt"])
+        data_tmp["updatedAt"] = pd.to_datetime(data["updatedAt"])
+        data_tmp["versionId"] = pd.to_numeric(data["versionId"])
+        data_tmp["fileCount"] = pd.to_numeric(data["fileCount"])
+        data_tmp["majorVersion"] = pd.to_numeric(data["majorVersion"])
+        data_tmp["minorVersion"] = pd.to_numeric(data["minorVersion"])
+        data_tmp["doi"] = data["doi"].astype(str)
+        data_tmp["title"] = data["title"].astype(str)
+        data_tmp["description"] = data["description"].astype(str)
+        #convert authors to list of strings
+        return data_tmp  
     
     
 
@@ -244,63 +363,26 @@ if __name__ == "__main__":
 
     #generate brief report about this dataframe
     
-    print(dp.base_dir)
     
     dict_of_filetypes_count = {}
     dict_of_filetypes_size = {}
     
     #open ndjson file as stream over lines
-    def load_filetypes_from_dp():
-        dict_of_filetypes_count = dp.dict_of_filetypes_count
-        dict_of_filetypes_size = dp.dict_of_filetypes_size
-        
-    def load_filetypes_from_responses():
-        with open(dp.base_dir + "combined_responses.ndjson", "r") as f:
-            #iterate over all lines load json
-            for line in tqdm(f):
-                line = json.loads(line)
-                #line is a dict with "data" and "doi" as keys
-                doi = line["doi"]
-                #iterate over all files
-                try:
-                    line["data"]["latestVersion"]["files"]
-                except KeyError as e:
-                    print(e)
-                    print(line)
-                    continue 
-                
-                for file in line["data"]["latestVersion"]["files"]:
-                    f_format = file["dataFile"]["contentType"]
-                    dict_of_filetypes_count[f_format] = dict_of_filetypes_count.get(f_format, 0) + 1
-                    dict_of_filetypes_size[f_format] = dict_of_filetypes_size.get(f_format, 0) + file["dataFile"]["filesize"]
     
-    load_filetypes_from_dp()
+    
+    new_dict_of_filetypes_count, new_dict_of_filetypes_size = dp.load_filetypes_from_responses_file("combined_responses.ndjson") 
+    noregex_dict_of_filetypes_count, noregex_dict_of_filetypes_size = dp.load_filetypes_from_responses_file("combined_responses.ndjson", regex=False) 
 
     #print all filetypes and their count
 
-    dp.dict_of_filetypes_count = dict_of_filetypes_count
-    dp.dict_of_filetypes_size = dict_of_filetypes_size
-
-    #sort both dics by value and plot them as bar chart
-    dict_of_filetypes_count = dict(sorted(dict_of_filetypes_count.items(), key=lambda item: item[1], reverse=True))
-    dict_of_filetypes_size = dict(sorted(dict_of_filetypes_size.items(), key=lambda item: item[1], reverse=True))
-
-    for dicter in [dict_of_filetypes_count, dict_of_filetypes_size]:
-        print("dicter")
-        for key, value in dicter.items():
-            print(key, value)
+    dict_of_filetypes_count = dp.dict_of_filetypes_count 
+    dict_of_filetypes_size = dp.dict_of_filetypes_size 
+   
+    #plot_filetypes(dict_of_filetypes_count, dict_of_filetypes_size)
+    plot_filetypes(new_dict_of_filetypes_count, new_dict_of_filetypes_size)
+    plot_filetypes(noregex_dict_of_filetypes_count, noregex_dict_of_filetypes_size)
     
-    #plot only top 50 filetypes
-    dict_of_filetypes_count = dict(list(dict_of_filetypes_count.items())[:50])
-    dict_of_filetypes_size = dict(list(dict_of_filetypes_size.items())[:50])
     
-    #plot both dicts as bar chart horizontally
-    fig, ax = plt.subplots(1,2, figsize=(10,10))
-    ax[0].barh(list(dict_of_filetypes_count.keys()), list(dict_of_filetypes_count.values()))
-    ax[0].set_title("Filetypes count")
-    ax[1].barh(list(dict_of_filetypes_size.keys()), list(dict_of_filetypes_size.values()))
-    ax[1].set_title("Filetypes size")
-    plt.show()
     """
     print(dp.data.info())
     print(dp.data.head())
@@ -313,9 +395,8 @@ if __name__ == "__main__":
     print(dp.data.memory_usage().sum())
     print(dp.data.memory_usage().sum()/1024)
     #for each collumn print first 2 non-null values so we can determine type of data
-    for col in dp.data.columns:
-        print(col,'\n',dp.data[col].dropna().head(2),'\n\n')  
     """
+
     
     #dp.data =dp.convert(dp.data)
     #dp.export_scibert_input() 
