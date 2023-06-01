@@ -74,7 +74,9 @@ Room for improvement:
 - Improvement to be done 2 -->
 
 TODO :calendar::
-- Create full nice and simple API for downloading metadata from all supported repositories.
+- One function for downloading records "from_date" to "to_date" as .json files for each repository.
+- One function for creating a dataframe from all the downloaded .json files and converting it to a merge-able format.
+- One function for merging the available dataframes and converting them to the final representation.
 - Improve data cleansing.
 - Create embeddings from multiple features of dataset metadata.
 
