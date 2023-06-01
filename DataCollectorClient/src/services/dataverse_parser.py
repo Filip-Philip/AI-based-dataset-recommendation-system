@@ -74,11 +74,13 @@ class DataverseParser(ParserBase):
         self.data = None
         self.data_dict = None
     
+    #local column names from parser ecosystem 
     BASE_COLUMN_NAMES = ["doi", "download_time", "created", "updated", "version", "title",
                         "authors", "description", "tags", "filetypes", "filepaths"]
+    
+    #native column names from dataverse
     ORIGINAL_COLUMN_NAMES = ["global_id","download_time", "createdAt", "updatedAt", "versionId", "name", 
                              "authors", "description", "keywords", "filetypes", "filepaths"]
-    
     """
     [
        'name', 'type', 'url', 'global_id', 'description', 'published_at',
@@ -108,6 +110,9 @@ class DataverseParser(ParserBase):
             #check if does not contain any special characters is not empty and is not a number and is maximum 10 characters long
             return re.match(r"^[a-zA-Z0-9]{1,10}$", extension) is not None
         
+        if 'files' not in self.data.columns and load_files_to_data == True:
+            self.data['files'] = [[] for _ in range(len(self.data))]
+
         with open(dp.base_dir + response_file_name, "r") as f:
             #iterate over all lines load json
             for line in tqdm(f):
@@ -126,10 +131,10 @@ class DataverseParser(ParserBase):
                 f_format_taken = 0
                 f_storage_taken = 0
                 
-                
-                cur_record = self.data.loc[self.data["doi"] == doi]  
+                cur_record = None
                 if load_files_to_data:
-                    cur_record["files"] = [] 
+                    cur_record = self.data.loc[self.data["doi"] == doi, "files"].iloc[0]
+
                 for file in line["data"]["latestVersion"]["files"]:
                     f_format = file["dataFile"]["filename"]
                     storage_identifier = file["dataFile"]["storageIdentifier"]
@@ -145,10 +150,13 @@ class DataverseParser(ParserBase):
                         f_storage_taken +=1
                     
                     if load_files_to_data:
-                        cur_record["files"].append({"name": file["dataFile"]["filename"], "type": f_format, "storage": storage_identifier, "size": file["dataFile"]["filesize"]})
+                        file_dict = {"name": file["dataFile"]["filename"], "type": f_format, "storage": storage_identifier, "size": file["dataFile"]["filesize"]}
+                        cur_record.append(file_dict)
+                        
                     
                     dict_of_filetypes_count[f_format] = dict_of_filetypes_count.get(f_format, 0) + 1
                     dict_of_filetypes_size[f_format] = dict_of_filetypes_size.get(f_format, 0) + file["dataFile"]["filesize"]
+                            
         print(f_name_taken, f_format_taken, f_storage_taken)
         return dict_of_filetypes_count, dict_of_filetypes_size
 
@@ -179,7 +187,6 @@ class DataverseParser(ParserBase):
     
     #newline delimited json                
     def download_dataset_details(self, only_missing:bool = True, result_filename:str= None):
-         
         def get_already_downloaded():
             regex_doi = re.Regex("doi\"\: \"([^\"]*)\"")
             already_downloaded = set()
@@ -192,7 +199,6 @@ class DataverseParser(ParserBase):
         excluded_dois = set()
         result_filename = self.base_dir +"files_info/"+  ( result_filename if result_filename is None else "responses.ndjson")
                 
-        
         #load already downloaded dois
         if os.path.exists(result_filename) and only_missing:
             excluded_dois.update(get_already_downloaded())
@@ -274,6 +280,42 @@ class DataverseParser(ParserBase):
         progress_bar.close()
         return dataverse_metadata
     
+    def correct_types(self,data:pd.DataFrame, in_place=False, native_column_names=False):
+        data_tmp = None
+        #convert columns to correct types
+        if(in_place):
+            data_tmp = data
+        else:
+            data_tmp = data.copy(True)
+    
+        if native_column_names:
+            #columns with native names from ORIGINAL_COLUMN_NAMES
+            data_tmp["download_time"] = pd.to_datetime(data["download_time"])
+            data_tmp["createdAt"] = pd.to_datetime(data["createdAt"])
+            data_tmp["updatedAt"] = pd.to_datetime(data["updatedAt"])
+            data_tmp["versionId"] = pd.to_numeric(data["versionId"])
+            data_tmp["fileCount"] = pd.to_numeric(data["fileCount"])
+            data_tmp["majorVersion"] = pd.to_numeric(data["majorVersion"])
+            data_tmp["minorVersion"] = pd.to_numeric(data["minorVersion"])
+            data_tmp["doi"] = data["doi"].astype(str)
+            data_tmp["title"] = data["title"].astype(str)
+            data_tmp["description"] = data["description"].astype(str)
+        else:
+            #columns with parser names from BASE_COLUMN_NAMES ["doi", "download_time", "created", "updated", "version", "title", "authors", "description", "tags", "filetypes", "filepaths"]
+            data_tmp["download_time"] = pd.to_datetime(data["download_time"])
+            data_tmp["created"] = pd.to_datetime(data["created"]) 
+            data_tmp["updated"] = pd.to_datetime(data["updated"])
+            data_tmp["version"] = pd.to_numeric(data["version"])
+            data_tmp["title"] = data["title"].astype(str)
+            data_tmp["authors"] = data["authors"].astype(str)
+            data_tmp["description"] = data["description"].astype(str)
+            data_tmp["tags"] = data["tags"].astype(str)
+            data_tmp["doi"] = data["doi"].astype(str)
+
+        #convert authors to list of strings
+        return data_tmp  
+    
+
     """                    """
     """HIGH LEVEL FUNCTIONS"""
     """                    """
@@ -287,20 +329,22 @@ class DataverseParser(ParserBase):
             data["download_time"] = datetime.now()
             data["filetypes"] = []
             data["filepaths"] = []
+            data["files"] = []
+            
         
         self.data_dict = dataverse_metadata
         self.data = self.to_dataframe(dataverse_metadata)
         self.data = self.convert(self.data)
         print("Downloading dataset details...")
         self.download_dataset_details()
-        print("Parsing dataset details...")
+        print("Parsing dataset details... Approximately 10min")
         self.load_filetypes_from_responses_file() 
 
     def convert(self, data:pd.DataFrame, in_place=False):
         filtered = self.filter_out(data)
         column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES,self.BASE_COLUMN_NAMES))
         filtered = filtered.rename(columns=column_name_map) 
-        filtered = self.correct_types(filtered, in_place=in_place)
+        filtered = self.correct_types(filtered,in_place, native_column_names=False)
         return filtered 
     
     def create_embedding(self):
@@ -321,48 +365,46 @@ class DataverseParser(ParserBase):
         #load from json file
         self.data = pd.read_json(self.base_dir + name + ".json", orient="records")
     
-    def print_records(self, how_many = 2, random = False):
+    def print_records(self, how_many = 2, random = False,columns:list[str]=[]):
         print("Printing for each collumn non null records")
-        for col in self.data.columns:
+        if columns == []:
+            columns = self.data.columns
+        for col in columns:
             #print so it shows whole value and not only first 50 chars
-            pd.set_option('display.max_colwidth', -1)
-            if random:
-                print(col,'\n',dp.data[col].dropna().sample(how_many),'\n\n')
-            else:
-                print(col,'\n',dp.data[col].dropna().head(how_many),'\n\n') 
-    
-    """     TYPES    """
-    def correct_types(data:pd.DataFrame, in_place=False):
-        data_tmp = None
-        #convert columns to correct types
-        if(in_place):
-            data_tmp = data
-        else:
-            data_tmp = data.copy(True)
+            pd.set_option('display.max_colwidth', None)
+
+            try:
+                tmp_data = dp.data[dp.data[col].map(lambda d: len(d) > 0)]
+                if len(tmp_data) == 0:
+                    print("No records for column " + col + "\n\n")
+                    continue
+                if random:
+                    print(col,'\n',tmp_data[col].dropna().sample(how_many),'\n\n')
+                else:
+                    print(col,'\n',tmp_data[col].dropna().head(how_many),'\n\n') 
+            except KeyError:
+                print("Column " + col + " does not exist")
+                continue
+
         
-        data_tmp["download_time"] = pd.to_datetime(data["download_time"])
-        data_tmp["createdAt"] = pd.to_datetime(data["createdAt"])
-        data_tmp["updatedAt"] = pd.to_datetime(data["updatedAt"])
-        data_tmp["versionId"] = pd.to_numeric(data["versionId"])
-        data_tmp["fileCount"] = pd.to_numeric(data["fileCount"])
-        data_tmp["majorVersion"] = pd.to_numeric(data["majorVersion"])
-        data_tmp["minorVersion"] = pd.to_numeric(data["minorVersion"])
-        data_tmp["doi"] = data["doi"].astype(str)
-        data_tmp["title"] = data["title"].astype(str)
-        data_tmp["description"] = data["description"].astype(str)
-        #convert authors to list of strings
-        return data_tmp  
-    
-    
 
 if __name__ == "__main__":
     dp = DataverseParser()
     #dp.download(debug=True)
     #dp.save( "dataverse")
     dp : DataverseParser = dp.load(dp.base_dir+"dataverse_w_filetypes")
-
-    #generate brief report about this dataframe
+    dp.data =dp.convert(dp.data)
     
+    print(dp.data.columns)
+    dp.print_records(3, random=True, columns=["filetypes", "filepaths", "files","doi"])
+    input("Press enter to continue")
+    #generate brief report about this dataframe
+    dp.load_filetypes_from_responses_file("combined_responses.ndjson")
+    
+    
+    dp.print_records(3, random=True, columns=["filetypes", "filepaths", "files","doi"])
+    dp.save("dataverse_w_files_column")
+    exit(0)
     
     dict_of_filetypes_count = {}
     dict_of_filetypes_size = {}
