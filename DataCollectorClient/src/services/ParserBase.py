@@ -16,6 +16,31 @@ OTHER = "other"
 SPARSE_CONVERSION_CONSTANT = 0.3
 
 
+# def convert_to_filetype_mean_std(row, df):
+#     size_dict = dict()
+#     for file in row.get("files", []):
+#         filetype = file.get("type", "")
+#         size_list = size_dict.get(filetype, [])
+#         size_list.append(file.get("size", 0))
+#         size_dict[filetype] = size_list
+#
+#     for filetype, count in row.get("filetypes", dict()).items():
+#         sizes = size_dict.pop(filetype)
+#         mean_size = sum(sizes) / count
+#         columns = [f"{filetype}_{MEAN_SIZE}", f"{filetype}_{STD_SIZE}"]
+#         spdtypes = df.dtypes[columns]
+#         df[columns] = df[columns].sparse.to_dense()
+#         # row[f"{filetype}_{MEAN_SIZE}"] = mean_size
+#         df.loc[row.name, f"{filetype}_{MEAN_SIZE}"] = mean_size
+#         std_size = np.sqrt(sum((np.array(sizes) - np.ones(count) * mean_size) ** 2) / count)
+#         df.loc[row.name, f"{filetype}_{STD_SIZE}"] = std_size
+#         df[columns] = df[columns].astype(spdtypes)
+#
+#         # row[f"{filetype}_{STD_SIZE}"] = pd.arrays.SparseArray(std_size)
+#
+#     return df.loc[row.name]
+
+
 def to_sparse(x):
     if x.isna().sum() / len(x) > SPARSE_CONVERSION_CONSTANT:
         return pd.arrays.SparseArray(x)
