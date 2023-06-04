@@ -4,7 +4,7 @@ import pathlib
 import numpy as np
 import requests
 from tqdm import tqdm
-from ParserBase import ParserBase
+from .ParserBase import ParserBase
 import pandas as pd
 import aiohttp
 import asyncio
@@ -156,7 +156,9 @@ class DataverseParser(ParserBase):
                     
                     dict_of_filetypes_count[f_format] = dict_of_filetypes_count.get(f_format, 0) + 1
                     dict_of_filetypes_size[f_format] = dict_of_filetypes_size.get(f_format, 0) + file["dataFile"]["filesize"]
-                            
+        if load_files_to_data:
+            self.dict_of_filetypes_count = dict_of_filetypes_count
+            self.dict_of_filetypes_size = dict_of_filetypes_size 
         print(f_name_taken, f_format_taken, f_storage_taken)
         return dict_of_filetypes_count, dict_of_filetypes_size
 
@@ -346,7 +348,10 @@ class DataverseParser(ParserBase):
         filtered = filtered.rename(columns=column_name_map) 
         filtered = self.correct_types(filtered,in_place, native_column_names=False)
         return filtered 
-    
+   
+    def save(self, filename:str):
+        ParserBase.save(self, self.base_dir + filename)
+        
     def create_embedding(self):
         pass
     
@@ -391,15 +396,19 @@ class DataverseParser(ParserBase):
 if __name__ == "__main__":
     dp = DataverseParser()
     #dp.download(debug=True)
-    #dp.save( "dataverse")
+    #dp.save("dataverse")
     dp : DataverseParser = dp.load(dp.base_dir+"dataverse_w_filetypes")
     dp.data =dp.convert(dp.data)
-    
+    dp2 = DataverseParser()
+    dp2.data = dp.data
+    dp2.data_dict = dp.data_dict
+    dp2.load_filetypes_from_responses_file("combined_responses.ndjson")
+    dp2.save("dataverse_export_to_merge")
+    exit(0)
     print(dp.data.columns)
     dp.print_records(3, random=True, columns=["filetypes", "filepaths", "files","doi"])
     input("Press enter to continue")
     #generate brief report about this dataframe
-    dp.load_filetypes_from_responses_file("combined_responses.ndjson")
     
     
     dp.print_records(3, random=True, columns=["filetypes", "filepaths", "files","doi"])
@@ -419,7 +428,6 @@ if __name__ == "__main__":
 
     dict_of_filetypes_count = dp.dict_of_filetypes_count 
     dict_of_filetypes_size = dp.dict_of_filetypes_size 
-   
     #plot_filetypes(dict_of_filetypes_count, dict_of_filetypes_size)
     plot_filetypes(new_dict_of_filetypes_count, new_dict_of_filetypes_size)
     plot_filetypes(noregex_dict_of_filetypes_count, noregex_dict_of_filetypes_size)

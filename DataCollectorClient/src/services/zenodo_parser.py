@@ -11,7 +11,7 @@ from typing import Dict, Set, Union, Any, KeysView
 from dotenv import load_dotenv
 import os
 from collections import Counter
-from DataCollectorClient.src.services.ParserBase import ParserBase, COUNT, SIZES, PATHS, OTHER, update_files_data, save_json, to_sparse
+from .ParserBase import ParserBase, COUNT, SIZES, PATHS, OTHER, update_files_data, save_json, to_sparse
 import numpy as np
 
 load_dotenv("environment.env")
