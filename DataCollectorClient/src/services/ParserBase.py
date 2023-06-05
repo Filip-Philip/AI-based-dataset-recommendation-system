@@ -66,7 +66,7 @@ def save_json(repository: str, json_object: str, from_date: str, to_date: str):
 class ParserBase(ABC):
     BASE_COLUMN_NAMES = ["doi", "download_time", "created", "updated", "version", "title",
                          "authors", "description", "tags", "filetypes", "filepaths"]
-
+    base_dir =""
     @abstractmethod
     def __init__(self):
         raise NotImplementedError
@@ -91,7 +91,12 @@ class ParserBase(ABC):
         column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES,self.BASE_COLUMN_NAMES))
         filtered = filtered.rename(columns=column_name_map)
         return filtered
-    
+    """
+    TODO: implement in subclasses
+    @abstractmethod
+    def check_api_key():
+        raise NotImplementedError
+    """
     @abstractmethod
     def update(self, *args, **kwargs):
         raise NotImplementedError

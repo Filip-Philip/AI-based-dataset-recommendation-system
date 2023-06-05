@@ -11,7 +11,7 @@ from typing import Dict, Set, Union, Any, KeysView
 from dotenv import load_dotenv
 import os
 from collections import Counter
-from .ParserBase import ParserBase, COUNT, SIZES, PATHS, MEAN_SIZE, STD_SIZE, OTHER, \
+from ParserBase import ParserBase, COUNT, SIZES, PATHS, MEAN_SIZE, STD_SIZE, OTHER, \
     update_files_data, save_json, to_sparse
 import numpy as np
 
@@ -128,6 +128,9 @@ class ZenodoParser(ParserBase):
             json_object = json.dumps(response_json)
             save_json("Zenodo", json_object, start_date, end_date)
 
+    def download(self, number_of_datasets: int = MAX_DOWNLOAD_PER_QUERY, start_date: str = None,
+                    end_date: str = None, preprocess: bool = False) -> None:
+        raise NotImplementedError
     # def download(self, number_of_datasets: int = MAX_DOWNLOAD_PER_QUERY, start_date: str = None,
     #              end_date: str = None, preprocess: bool = False) -> None:
     #     if start_date is None and end_date is None:

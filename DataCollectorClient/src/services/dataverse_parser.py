@@ -1,20 +1,19 @@
+from ParserBase import ParserBase
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-import pathlib
-import numpy as np
-import requests
 from tqdm import tqdm
-from .ParserBase import ParserBase
-import pandas as pd
+from tqdm.asyncio import tqdm_asyncio
 import aiohttp
 import asyncio
-from tqdm.asyncio import tqdm_asyncio
-import sys
-import os
 import json
-import regex as re
-
 import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pandas as pd
+import pathlib
+import regex as re
+import requests
+import sys
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
