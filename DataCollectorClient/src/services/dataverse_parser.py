@@ -252,7 +252,19 @@ class DataverseParser(ParserBase):
                             print(e)
                             print(response)
                             continue 
-    def download_search_results(self, start=1, per_page=1000, debug=False):
+    
+    def download_search_results(self, start=1, per_page=1000, debug=False) -> pd.DataFrame:
+        """_summary_
+            Calls the dataverse search api to collect all datasets brief information about version and their doi. 
+            Example responses: https://guides.dataverse.org/en/latest/api/search.html
+        Args:
+            start (int, optional): _description_. Defaults to 1.
+            per_page (int, optional): _description_. Defaults to 1000.
+            debug (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            pd.DataFrame: 
+        """
         dataverse_metadata = []
         start = 1
         all =   300000 
@@ -347,7 +359,14 @@ class DataverseParser(ParserBase):
         filtered = filtered.rename(columns=column_name_map) 
         filtered = self.correct_types(filtered,in_place, native_column_names=False)
         return filtered 
-   
+    
+    def check_api_key(self):
+        if self.api_key == None:
+            raise ValueError("API key is not set. Use set_api_key() function to set it.")
+    def set_api_key(self, api_key:str):
+        self.api_key = api_key
+        self.headers = {"X-Dataverse-key": api_key}
+        
     def save(self, filename:str):
         ParserBase.save(self, self.base_dir + filename)
         
@@ -355,10 +374,29 @@ class DataverseParser(ParserBase):
         pass
     
     def should_update(self, *args, **kwargs) -> bool:
+        if self.data == None:
+            return True
+        if self.data.empty:
+            return True
+        
         return False
     
     def update(self, *args, **kwargs):
-        pass
+        search_results = self.download_search_results()
+        #TODO: save search results to file
+        to_download = []
+        to_update = []
+        for data in tqdm(search_results):
+            data_doi = str(data["global_id"])
+            #get updated date as datetime date in format "2019-12-24T08:38:00Z" 
+            data_updated = datetime.strptime(data["updatedAt"], '%Y-%m-%dT%H:%M:%SZ')
+            
+            if data_doi in self.data["doi"].values:
+                if data_updated > self.data[self.data["doi"] == data_doi]["updated"] :
+                    to_update.append(data)
+            else:
+                to_download.append(data)
+                
 
     """ UTILITIES """ 
     def export_scibert_input(self, name:str = "scibert_input"):
@@ -396,13 +434,17 @@ if __name__ == "__main__":
     dp = DataverseParser()
     #dp.download(debug=True)
     #dp.save("dataverse")
-    dp : DataverseParser = dp.load(dp.base_dir+"dataverse_w_filetypes")
+    dp : DataverseParser = dp.load(dp.base_dir+"dataverse_export_to_merge")
+    
+    dp.save_title_description_json(dp.data, dp.base_dir + "title_description.json")
+    """
     dp.data =dp.convert(dp.data)
     dp2 = DataverseParser()
     dp2.data = dp.data
     dp2.data_dict = dp.data_dict
     dp2.load_filetypes_from_responses_file("combined_responses.ndjson")
     dp2.save("dataverse_export_to_merge")
+    """
     exit(0)
     print(dp.data.columns)
     dp.print_records(3, random=True, columns=["filetypes", "filepaths", "files","doi"])

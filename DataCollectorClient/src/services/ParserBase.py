@@ -91,12 +91,11 @@ class ParserBase(ABC):
         column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES,self.BASE_COLUMN_NAMES))
         filtered = filtered.rename(columns=column_name_map)
         return filtered
-    """
-    TODO: implement in subclasses
+    
     @abstractmethod
     def check_api_key():
         raise NotImplementedError
-    """
+    
     @abstractmethod
     def update(self, *args, **kwargs):
         raise NotImplementedError
@@ -109,6 +108,9 @@ class ParserBase(ABC):
     def create_embedding(self, *args, **kwargs):
         raise NotImplementedError
 
+    def save_title_description_json(self, data:DataFrame, filename:str):
+        data[["title","description","doi"]].to_json(filename,orient="records")
+    
     def to_pickle(self,  *args, **kwargs) -> bytes:
         return pickle.dumps(self)
 
@@ -125,3 +127,26 @@ class ParserBase(ABC):
         list_ = list_.replace('[', '["')
         list_ = list_.replace(']', '"]')
         return list_
+import torch
+import tqdm
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def make_data_embedding(title_description_metadata,tokenizer, model, method="mean", dim=1):
+     
+    #keep track what embeddings are done and save that to file
+    embedding_list = []
+
+    for i in tqdm.tqdm(range(len(title_description_metadata))):
+
+        embedding = embed_text(title_description_metadata[i],tokenizer, model)
+
+        if method == "mean":
+            embedding_list.append(embedding.mean(dim).to(device))
+        
+
+ 
+    return embedding_list
+
+description_embedding = make_data_embedding(title_description_metadata_untrashed["text"].values, tokenizer, model)

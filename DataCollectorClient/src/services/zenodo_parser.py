@@ -193,7 +193,8 @@ class ZenodoParser(ParserBase):
                 else:
                     sparse_this_period_df = this_period_df.apply(to_sparse)
                     self.data = pd.concat([self.data, sparse_this_period_df])
-
+    
+    
     def download_to_backup_from_to(self, start_date, end_date, preprocess: bool) -> None:
         interval_end = start_date + datetime.timedelta(weeks=+self.DOWNLOAD_PERIOD_WEEKS)
         while start_date < end_date:
@@ -229,7 +230,10 @@ class ZenodoParser(ParserBase):
     def update(self, older_than: datetime) -> None:
         if older_than > self.last_updated:
             self.download()
-
+   
+    def check_api_key():
+        raise NotImplementedError
+    
     def close(self):
         pass
 
@@ -317,10 +321,13 @@ class ZenodoParser(ParserBase):
 
 if __name__ == "__main__":
     parser = ZenodoParser()
-    tqdm.pandas()
+    parser : ZenodoParser = parser.load("AI-based-dataset-recommendation-system\data\Zenoodo\pickle_test_all_with_files_sparse.pickle")
+    parser.data.info()
+    parser.save_title_description_json(parser.data, "AI-based-dataset-recommendation-system\data\Zenoodo\pickle_test_all_with_files_sparse.json")
+    
     # parser.download()
     # parser = parser.load("pickle_test_all2.pickle")
-    parser.get_target_data(160)
+    # parser.get_target_data(160)
     # parser.download_all_from_backup(True)
     # print(parser.data.columns)
     # data = parser.data.apply(convert_to_filetype_mean_std, axis=1)

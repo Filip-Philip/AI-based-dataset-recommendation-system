@@ -91,29 +91,12 @@ if __name__ == "__main__":
         
         parser.data = parser.convert(parser.data)
         parser.save(os.path.join(parser.base_dir,parser.pickle_fname))
-        
-        
         #TODO: think if that flow is ok
         
-    #TODO: concatenate all dataframes from all parsers / or create embeddings and store them
-              
-    
-    
-     
-    
-    
-
-
-
             
-            
-            
-                
-            
-        #TODO: check if there is pickled parser in current directory
+    #TODO: concatenate all dataframes from all parsers / or create embeddings and store them        
+    #TODO: check if there is pickled parser in current directory
         """"""
         
 
-        parser.download()
-        parser.save("{}.pickle".format(parser.__class__.__name__))
         
