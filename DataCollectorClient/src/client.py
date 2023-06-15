@@ -5,6 +5,7 @@ from services.dataverse_parser import DataverseParser
 from services.unified_container import UnifiedContainer
 import json
 import os
+from config.definitions import ROOT_DIR
 
 # loading config with filepaths and options how to handle parsers
 # creating filetree for parsers
@@ -77,12 +78,13 @@ if __name__ == "__main__":
 
         
         #DOWNLOAD/UPDATE
+        parser.download()
         
         #check if parser should be updated
         last_update = parser.last_update 
-        time_elapsed =  datetime.datetime.now() - parser.last_update
+        time_elapsed = datetime.datetime.now() - parser.last_update
         print("Time elapsed: {}".format(time_elapsed)) 
-        if parser.last_update is None or  parser.last_update  < CONFIG["PARSERS"][parser_name]["update_interval"]:
+        if parser.last_update is None or parser.last_update < CONFIG["PARSERS"][parser_name]["update_interval"]:
             parser.update()
             parser.save(os.path.join(parser.base_dir,parser.pickle_fname))
         else:
@@ -90,7 +92,7 @@ if __name__ == "__main__":
         
         #CONVERT
         
-        parser.data = parser.convert(parser.data)
+        parser.data = parser.convert(in_place=False)
         parser.save(os.path.join(parser.base_dir, "parser_pickles", parser.pickle_fname))
         #TODO: think if that flow is ok
         
@@ -102,5 +104,6 @@ if __name__ == "__main__":
     data_container = UnifiedContainer()
     data_container.append_data(all_data)
     data_container.get_target_data(top_n=160)
+    data_container.save(os.path.join(ROOT_DIR, "data", "unified", "unified1"))
 
         

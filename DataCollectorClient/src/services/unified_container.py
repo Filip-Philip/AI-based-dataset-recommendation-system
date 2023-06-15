@@ -1,3 +1,4 @@
+import pickle
 from typing import Dict, List
 
 import numpy as np
@@ -84,3 +85,7 @@ class UnifiedContainer:
             std_size = np.sqrt(sum((np.array(sizes) - np.ones(count) * mean_size) ** 2) / count)
             self.data.loc[row.name, f"{filetype}_{STD_SIZE}"] = std_size
             self.data[columns] = self.data[columns].astype(spdtypes)
+
+    def save(self, filename: str) -> None:
+        with open(filename, 'wb') as file:
+            pickle.dump(self, file, protocol=pickle.HIGHEST_PROTOCOL)

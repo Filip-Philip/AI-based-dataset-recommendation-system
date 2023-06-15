@@ -205,19 +205,28 @@ class ZenodoParser(ParserBase):
                 #     datasets = get_file_data(datasets, self.important_filetypes.keys())
 
                 this_period_df = pd.DataFrame.from_records(datasets)
-                this_period_df = this_period_df[self.ORIGINAL_COLUMN_NAMES]
+                # this_period_df = this_period_df[self.ORIGINAL_COLUMN_NAMES]
                 # if preprocess:
                 self.data = pd.concat([self.data, this_period_df])
                 # else:
                 #     sparse_this_period_df = this_period_df.apply(to_sparse)
                 #     self.data = pd.concat([self.data, sparse_this_period_df])
 
-
-    def filter_out(self):
+    def filter_out(self, in_place=False) -> pd.DataFrame | None:
+        if in_place:
+            self.data = self.data[self.ORIGINAL_COLUMN_NAMES]
+            return
         return self.data[self.ORIGINAL_COLUMN_NAMES]
 
-    def convert(self) -> Dict:
-        return dict(zip(self.ORIGINAL_COLUMN_NAMES, self.BASE_COLUMN_NAMES))
+    def convert(self, in_place=False) -> pd.DataFrame | None:
+        filtered_data = self.filter_out(in_place)
+        column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES, self.BASE_COLUMN_NAMES))
+        if in_place:
+            self.data = self.data.rename(columns=column_name_map)
+            return
+
+        filtered_data = filtered_data.rename(columns=column_name_map)
+        return filtered_data
 
     def create_embedding(self):
         pass
