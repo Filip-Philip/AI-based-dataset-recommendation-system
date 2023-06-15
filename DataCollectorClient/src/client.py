@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
     #PARSERS
     CONFIG["PARSERS"] = []
-    CONFIG["PARSERS"].append({"name":"ZenodoParser","enabled":True, "update":True, "update_interval":1, "pickle_fname":"ZenodoParser.pickle", "debug":True, "debug_log_file":"ZenodoParser.log"})
-    CONFIG["PARSERS"].append({"name":"DataverseParser","enabled":True, "update":True, "update_interval":1, "pickle_fname":"DataverseParser.pickle" , "debug":True, "debug_log_file":"DataverseParser.log"})
+    CONFIG["PARSERS"].append({"name":"ZenodoParser","enabled":True, "update":True, "update_interval":datetime.timedelta(days=10), "pickle_fname":"ZenodoParser.pickle", "debug":True, "debug_log_file":"ZenodoParser.log"})
+    CONFIG["PARSERS"].append({"name":"DataverseParser","enabled":True, "update":True, "update_interval":datetime.timedelta(days=10), "pickle_fname":"DataverseParser.pickle" , "debug":True, "debug_log_file":"DataverseParser.log"})
 
 
 
@@ -79,9 +79,10 @@ if __name__ == "__main__":
         
         #check if parser should be updated
         last_update = parser.last_update 
-        time_elapsed =  datetime.datetime.now() - parser.last_update
+        time_elapsed : datetime.timedelta =  datetime.datetime.now() - parser.last_update
         print("Time elapsed: {}".format(time_elapsed)) 
-        if parser.last_update is None or  parser.last_update  < CONFIG["PARSERS"][parser_name]["update_interval"]:
+        
+        if ( parser.last_update is None ) or ( parser.last_update < CONFIG["PARSERS"][parser_name]["update_interval"] ) :
             parser.update()
             parser.save(os.path.join(parser.base_dir,parser.pickle_fname))
         else:

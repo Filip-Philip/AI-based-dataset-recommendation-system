@@ -1,4 +1,5 @@
 from abc import ABC,abstractmethod
+from datetime import datetime
 import pickle
 # from dataclasses.DataCluster import DataCluster
 # from dataclasses.EmbeddingBase import EmbeddingBase
@@ -67,6 +68,9 @@ class ParserBase(ABC):
     BASE_COLUMN_NAMES = ["doi", "download_time", "created", "updated", "version", "title",
                          "authors", "description", "tags", "filetypes", "filepaths"]
     base_dir =""
+    #TODO: possible extension of history of updates 
+    last_update : datetime = datetime.datetime(1970,1,1)
+    
     @abstractmethod
     def __init__(self):
         raise NotImplementedError
@@ -98,6 +102,11 @@ class ParserBase(ABC):
     
     @abstractmethod
     def update(self, *args, **kwargs):
+        """Used as main function which will be used to download and update data from the source
+
+        Raises:
+            NotImplementedError: Abstract class does not have implementation. See child classes 
+        """
         raise NotImplementedError
     
     @abstractmethod
