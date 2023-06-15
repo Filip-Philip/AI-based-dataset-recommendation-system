@@ -63,6 +63,8 @@ class UnifiedContainer:
 
         self.data.progress_apply(self.__convert_to_filetype_mean_std, axis=1)
 
+
+    # TODO: use pd.update() to update values in sparse dataframe
     def __convert_to_filetype_mean_std(self, row):
         size_dict = dict()
         try:

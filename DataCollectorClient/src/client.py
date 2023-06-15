@@ -78,7 +78,8 @@ if __name__ == "__main__":
 
         
         #DOWNLOAD/UPDATE
-        parser.download()
+        # TODO: DAILY downloads to json
+        # parser.download()
         
         #check if parser should be updated
         last_update = parser.last_update 
@@ -86,24 +87,22 @@ if __name__ == "__main__":
         print("Time elapsed: {}".format(time_elapsed)) 
         if parser.last_update is None or parser.last_update < CONFIG["PARSERS"][parser_name]["update_interval"]:
             parser.update()
-            parser.save(os.path.join(parser.base_dir,parser.pickle_fname))
+            parser.save(os.path.join(parser.base_dir, parser.pickle_fname))
         else:
             print("Parser {} update is not required by timeinterval".format(parser_name))
         
         #CONVERT
+        # TODO: build dataframe from all/new? jsons
+        parser.dataframe_from_backup()
         
+        parser.save(os.path.join(parser.base_dir, "parser_pickles", parser.pickle_fname))
         parser.data = parser.convert(in_place=False)
         parser.save(os.path.join(parser.base_dir, "parser_pickles", parser.pickle_fname))
-        #TODO: think if that flow is ok
         
             
-    #TODO: concatenate all dataframes from all parsers / or create embeddings and store them        
+    #TODO: dataframes store them
     #TODO: check if there is pickled parser in current directory
         """"""
-    all_data = [parser.data for parser in parsers.values()]
-    data_container = UnifiedContainer()
-    data_container.append_data(all_data)
-    data_container.get_target_data(top_n=160)
-    data_container.save(os.path.join(ROOT_DIR, "data", "unified", "unified1"))
+    # TODO: get filetype info before embedding
 
         
