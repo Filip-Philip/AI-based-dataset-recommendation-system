@@ -2,6 +2,7 @@ import datetime
 import logging as log
 from services.zenodo_parser import ZenodoParser
 from services.dataverse_parser import DataverseParser
+from services.unified_container import UnifiedContainer
 import json
 import os
 
@@ -90,13 +91,16 @@ if __name__ == "__main__":
         #CONVERT
         
         parser.data = parser.convert(parser.data)
-        parser.save(os.path.join(parser.base_dir,parser.pickle_fname))
+        parser.save(os.path.join(parser.base_dir, "parser_pickles", parser.pickle_fname))
         #TODO: think if that flow is ok
         
             
     #TODO: concatenate all dataframes from all parsers / or create embeddings and store them        
     #TODO: check if there is pickled parser in current directory
         """"""
-        
+    all_data = [parser.data for parser in parsers.values()]
+    data_container = UnifiedContainer()
+    data_container.append_data(all_data)
+    data_container.get_target_data(top_n=160)
 
         
