@@ -134,12 +134,14 @@ class ZenodoParser(ParserBase):
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
         interval_end = start_date + datetime.timedelta(weeks=+self.DOWNLOAD_PERIOD_WEEKS)
+        interval_end = min(interval_end, end_date)
         while start_date < end_date:
             start_date_string = start_date.strftime('%Y-%m-%d')
             interval_end_date_string = interval_end.strftime('%Y-%m-%d')
             self.download_interval_to_backup(start_date=start_date_string, end_date=interval_end_date_string)
             start_date += datetime.timedelta(weeks=+self.DOWNLOAD_PERIOD_WEEKS)
             interval_end += datetime.timedelta(weeks=+self.DOWNLOAD_PERIOD_WEEKS)
+            interval_end = min(interval_end, end_date)
 
     # TODO: finish this function (it should return only the intervals [within the given interval] that need downloading)
     def check_backup(self, start_date: datetime.date, end_date: datetime.date):
