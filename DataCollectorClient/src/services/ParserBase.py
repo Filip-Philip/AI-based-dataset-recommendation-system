@@ -1,4 +1,4 @@
-from abc import ABC,abstractmethod
+from abc import ABC, abstractmethod
 from datetime import datetime
 import pickle
 # from dataclasses.DataCluster import DataCluster
@@ -59,8 +59,8 @@ def update_files_data(files_data: Dict, filetypes: Set) -> Dict:
     return files_data
 
 
-def save_json(repository: str, json_object: str, from_date: str, to_date: str):
-    with open(f"../../../data/{repository}/backup_jsons/{from_date}-{to_date}.json", "w") as outfile:
+def save_json(repository_data_path: str, json_object: str, from_date: str, to_date: str):
+    with open(f"{repository_data_path}/backup_jsons/{from_date}-{to_date}.json", "w") as outfile:
         outfile.write(json_object)
 
 
@@ -68,9 +68,6 @@ class ParserBase(ABC):
     BASE_COLUMN_NAMES = ["doi", "download_time", "created", "updated", "version", "title",
                          "authors", "description", "tags", "filetypes", "filepaths"]
     base_dir =""
-    #TODO: possible extension of history of updates 
-    last_update : datetime = datetime.datetime(1970,1,1)
-    
     @abstractmethod
     def __init__(self):
         raise NotImplementedError
@@ -78,28 +75,28 @@ class ParserBase(ABC):
     def load(self, path):
         with open(path, 'rb') as file:
             return pickle.load(file)
-    
-    def debug_log(self,debug, message):
+
+    def debug_log(self, debug, message):
         if debug:
-            print("DEBUG {} LOG: {}".format(self.__class__,message))
+            print("DEBUG {} LOG: {}".format(self.__class__, message))
 
     @abstractmethod
-    def download(self, *args, **kwargs): 
+    def download(self, *args, **kwargs):
         raise NotImplementedError
 
-    def filter_out(self,data:DataFrame, in_place=False):
+    def filter_out(self, data: DataFrame, in_place=False):
         return self.data[self.ORIGINAL_COLUMN_NAMES]
-    
-    def convert(self, data:DataFrame, in_place=False):
+
+    def convert(self, data: DataFrame, in_place=False):
         filtered = self.filter_out(data)
-        column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES,self.BASE_COLUMN_NAMES))
+        column_name_map = dict(zip(self.ORIGINAL_COLUMN_NAMES, self.BASE_COLUMN_NAMES))
         filtered = filtered.rename(columns=column_name_map)
         return filtered
-    
+
     @abstractmethod
-    def check_api_key():
+    def check_api_key(self):
         raise NotImplementedError
-    
+
     @abstractmethod
     def update(self, *args, **kwargs):
         """Used as main function which will be used to download and update data from the source
@@ -108,54 +105,55 @@ class ParserBase(ABC):
             NotImplementedError: Abstract class does not have implementation. See child classes 
         """
         raise NotImplementedError
-    
+
     @abstractmethod
     def should_update(self, *args, **kwargs) -> bool:
         raise NotImplementedError
-    
+
     @abstractmethod
     def create_embedding(self, *args, **kwargs):
         raise NotImplementedError
 
-    def save_title_description_json(self, data:DataFrame, filename:str):
-        data[["title","description","doi"]].to_json(filename,orient="records")
-    
-    def to_pickle(self,  *args, **kwargs) -> bytes:
+    def save_title_description_json(self, data: DataFrame, filename: str):
+        data[["title", "description", "doi"]].to_json(filename, orient="records")
+
+    def to_pickle(self, *args, **kwargs) -> bytes:
         return pickle.dumps(self)
 
     def save(self, filename: str) -> None:
         with open(filename, 'wb') as file:
             pickle.dump(self, file, protocol=pickle.HIGHEST_PROTOCOL)
-    
-    def to_dataframe(self, data:dict) -> DataFrame:
+
+    def to_dataframe(self, data: dict) -> DataFrame:
         return DataFrame(data)
-    
+
     """utility functions"""
+
     def clean_alt_list(list_: str):
         list_ = list_.replace(', ', '","')
         list_ = list_.replace('[', '["')
         list_ = list_.replace(']', '"]')
         return list_
+
+
 import torch
 import tqdm
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def make_data_embedding(title_description_metadata,tokenizer, model, method="mean", dim=1):
-     
-    #keep track what embeddings are done and save that to file
+def make_data_embedding(title_description_metadata, tokenizer, model, method="mean", dim=1):
+    # keep track what embeddings are done and save that to file
     embedding_list = []
 
     for i in tqdm.tqdm(range(len(title_description_metadata))):
 
-        embedding = embed_text(title_description_metadata[i],tokenizer, model)
+        embedding = embed_text(title_description_metadata[i], tokenizer, model)
 
         if method == "mean":
             embedding_list.append(embedding.mean(dim).to(device))
-        
 
- 
     return embedding_list
+
 
 description_embedding = make_data_embedding(title_description_metadata_untrashed["text"].values, tokenizer, model)

@@ -14,6 +14,7 @@ import pathlib
 import regex as re
 import requests
 import sys
+from config.definitions import ROOT_DIR
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
@@ -66,7 +67,8 @@ def plot_filetypes(ft_count, ft_size, top_n=50):
 
 class DataverseParser(ParserBase):
     # https://guides.dataverse.org/en/5.13/api/search.html
-    base_dir = """C:/Users/Luki/Documents/Studia/Inzynierka/AI-based-dataset-recommendation-system/data/Dataverse/"""
+    # base_dir = """C:/Users/Luki/Documents/Studia/Inzynierka/AI-based-dataset-recommendation-system/data/Dataverse/"""
+    base_dir = os.path.join(ROOT_DIR, 'data', 'Dataverse/')
     response_filename = "responses.ndjson"
     def __init__(self, url="https://dataverse.harvard.edu/api/search"):
         self.url = url
