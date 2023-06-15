@@ -365,6 +365,7 @@ class DataverseParser(ParserBase):
     def check_api_key(self):
         if self.api_key == None:
             raise ValueError("API key is not set. Use set_api_key() function to set it.")
+        
     def set_api_key(self, api_key:str):
         self.api_key = api_key
         self.headers = {"X-Dataverse-key": api_key}
