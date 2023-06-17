@@ -3,7 +3,7 @@ from tqdm import tqdm
 import requests
 import json
 import pandas as pd
-from typing import List
+from typing import List, Tuple
 import pickle
 from pathlib import Path
 from typing import Dict, Set, Union, Any, KeysView
@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 import os
 from collections import Counter
 from ParserBase import ParserBase, COUNT, SIZES, PATHS, MEAN_SIZE, STD_SIZE, OTHER, \
-    update_files_data, save_json, to_sparse
+    update_files_data, save_json, to_sparse, DOWNLOAD_PERIOD_DAYS, save_json_day
 import numpy as np
 from config.definitions import ROOT_DIR
 
@@ -96,18 +96,25 @@ class ZenodoParser(ParserBase):
     base_dir = os.path.join(ROOT_DIR, 'data', 'Zenodo/')
     ORIGINAL_COLUMN_NAMES = ["doi", "download_time", "created", "updated", "version", "title",
                              "creators", "description", "keywords", "filetypes", "filepaths"]
-    DOWNLOAD_PERIOD_WEEKS = 4
     MAX_DOWNLOAD_PER_QUERY = 10000
 
-    def __init__(self):
+    def __init__(self, download_period_days):
         self.data = pd.DataFrame()
         self.last_updated = None
         self.occurrence_count = dict()
         self.occurrence_ratio = dict()
         self.important_filetypes = dict()
+        self.download_period_days = download_period_days
 
-    def download_interval_to_backup(self, start_date: str, end_date: str, number_of_datasets: int = MAX_DOWNLOAD_PER_QUERY) -> None:
+    def download_interval_to_backup(self, start_date: str, end_date: str,
+                                    number_of_datasets: int = MAX_DOWNLOAD_PER_QUERY) -> None:
+        '''
 
+        :param start_date: (EXCLUSIVE)
+        :param end_date: (INCLUSIVE)
+        :param number_of_datasets:
+        :return:
+        '''
         response = requests.get('https://zenodo.org/api/records',
                                 params={'access_token': ACCESS_TOKEN,
                                         'q': 'publication_date:{%(start)s TO %(end)s]' %
@@ -125,94 +132,75 @@ class ZenodoParser(ParserBase):
 
             json_object = json.dumps(response_json)
 
-            save_json(self.base_dir, json_object, start_date, end_date)
+            start_datetime = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_datetime = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+            if start_datetime + datetime.timedelta(1) == end_datetime:
+                year = end_datetime.year
+                month = end_datetime.month
+                day = end_datetime.day
+                save_json_day(self.base_dir, json_object, year, month, day)
+            else:
+                save_json(self.base_dir, json_object, start_date, end_date)
 
     def download(self, number_of_datasets: int = MAX_DOWNLOAD_PER_QUERY,
                  start_date: str = START_DATE.strftime('%Y-%m-%d'),
                  end_date: str = datetime.datetime.now().date().strftime('%Y-%m-%d')) -> None:
+        '''
+        :param number_of_datasets: int
+        :param start_date : str (EXCLUSIVE)
+        :param end_date: str (INCLUSIVE)
+        :return: None
+        '''
         print(f"Downloading Zenodo from {start_date} to {end_date}...")
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
-        interval_end = start_date + datetime.timedelta(weeks=+self.DOWNLOAD_PERIOD_WEEKS)
-        interval_end = min(interval_end, end_date)
-        while start_date < end_date:
-            start_date_string = start_date.strftime('%Y-%m-%d')
-            interval_end_date_string = interval_end.strftime('%Y-%m-%d')
-            self.download_interval_to_backup(start_date=start_date_string, end_date=interval_end_date_string)
-            start_date += datetime.timedelta(weeks=+self.DOWNLOAD_PERIOD_WEEKS)
-            interval_end += datetime.timedelta(weeks=+self.DOWNLOAD_PERIOD_WEEKS)
-            interval_end = min(interval_end, end_date)
+        missing_in_backup = self.check_backup(start_date, end_date)
+        if missing_in_backup:
+            for s_date, e_date in missing_in_backup:
+                self.download_interval_to_backup(start_date=s_date, end_date=e_date)
 
-    # TODO: finish this function (it should return only the intervals [within the given interval] that need downloading)
-    def check_backup(self, start_date: datetime.date, end_date: datetime.date):
-        print(f"Checking if Zenodo data is backed up from {start_date.strftime('%Y-%m-%d')} "
-              f"to {end_date.strftime('%Y-%m-%d')}...")
-        intervals_missing = []
-        for filename in tqdm(os.scandir(f"{self.base_dir}/backup_jsons")):
-            no_extension = Path(filename.name).stem
-            file_start_date, file_end_date = no_extension.split("-", 1)
-            file_start_date = datetime.datetime.strptime(file_start_date, "%Y-%m-%d").date()
-            file_end_date = datetime.datetime.strptime(file_end_date, "%Y-%m-%d").date()
-            # if file_start_date <= start_date < end_date:
+    def check_backup(self, start_date: datetime.date, end_date: datetime.date) -> List[Tuple[str, str]] | bool:
+        '''
 
-    # def download(self, number_of_datasets: int = MAX_DOWNLOAD_PER_QUERY, start_date: str = None,
-    #              end_date: str = None, preprocess: bool = False) -> None:
-    #     if start_date is None and end_date is None:
-    #         response = requests.get('https://zenodo.org/api/records', params={'access_token': ACCESS_TOKEN,
-    #                                                                           'size': number_of_datasets,
-    #                                                                           'type': 'dataset'})
-    #     else:
-    #         response = requests.get('https://zenodo.org/api/records',
-    #                                 params={'access_token': ACCESS_TOKEN,
-    #                                         'q': 'publication_date:{%(start)s TO %(end)s]' %
-    #                                              {'start': start_date, 'end': end_date},
-    #                                         'size': number_of_datasets,
-    #                                         'type': 'dataset'})
-    #
-    #     if response.status_code == STATUS_OK:
-    #         self.last_updated = datetime.datetime.now()
-    #         response_json = response.json()
-    #
-    #         time_column_name = self.ORIGINAL_COLUMN_NAMES[1]
-    #         for dataset in response_json["hits"]["hits"]:
-    #             dataset[time_column_name] = self.last_updated
-    #
-    #         json_object = json.dumps(response_json)
-    #         save_json("Zenodo", json_object, start_date, end_date)
-    #
-    #         datasets = response_json["hits"]["hits"]
-    #         if preprocess:
-    #             datasets = self.__gather_filetypes_and_paths(datasets)
-    #         else:
-    #             datasets = unpack_metadata(datasets)
-    #             datasets = get_file_data(datasets, self.important_filetypes.keys())
-    #
-    #         this_period_df = pd.DataFrame.from_records(datasets)
-    #         if preprocess:
-    #             self.data = pd.concat([self.data, this_period_df])
-    #         else:
-    #             sparse_this_period_df = this_period_df.apply(to_sparse)
-    #             self.data = pd.concat([self.data, sparse_this_period_df])
+        :param start_date: (EXCLUSIVE)
+        :param end_date: (INCLUSIVE)
+        :return:
+        '''
+        print(f"Checking if Zenodo data from {start_date.strftime('%Y-%m-%d')} "
+              f"to {end_date.strftime('%Y-%m-%d')} is stored in cache...")
+
+        days_to_download = []
+        start_date += datetime.timedelta(days=+self.download_period_days)
+        while start_date <= end_date:
+            year = start_date.year
+            month = start_date.month
+            day = start_date.day
+            file_checked = f"{self.base_dir}/backup_jsons/{year}/{month}/{day}.json"
+            if not os.path.isfile(file_checked):
+                previous_start_day = start_date - datetime.timedelta(days=self.download_period_days)
+                previous_start_day = previous_start_day.strftime('%Y-%m-%d')
+
+                days_to_download.append((previous_start_day, start_date.strftime('%Y-%m-%d')))
+            
+            start_date += datetime.timedelta(days=self.download_period_days)
+        
+        return days_to_download
 
     def dataframe_from_backup(self):
-        for filename in tqdm(os.scandir(f"{self.base_dir}/backup_jsons")):
-            with open(f"{self.base_dir}/backup_jsons/" + filename.name, "r") as file:
-                response_json = json.loads(file.read())
+        for root, dirs, files in tqdm(os.walk(f"{self.base_dir}/backup_jsons")):
+            for filename in files:
+                path = os.path.join(root, filename)
+                with open(path, "r") as file:
+                    response_json = json.loads(file.read())
 
-                datasets = response_json["hits"]["hits"]
-                # if preprocess:
-                datasets = self.__gather_filetypes_and_paths(datasets)
-                # else:
-                datasets = unpack_metadata(datasets)
-                #     datasets = get_file_data(datasets, self.important_filetypes.keys())
+                    datasets = response_json["hits"]["hits"]
 
-                this_period_df = pd.DataFrame.from_records(datasets)
-                # this_period_df = this_period_df[self.ORIGINAL_COLUMN_NAMES]
-                # if preprocess:
-                self.data = pd.concat([self.data, this_period_df])
-                # else:
-                #     sparse_this_period_df = this_period_df.apply(to_sparse)
-                #     self.data = pd.concat([self.data, sparse_this_period_df])
+                    datasets = self.__gather_filetypes_and_paths(datasets)
+                    datasets = unpack_metadata(datasets)
+
+                    this_period_df = pd.DataFrame.from_records(datasets)
+
+                    self.data = pd.concat([self.data, this_period_df])
 
     def filter_out(self, in_place=False) -> pd.DataFrame | None:
         if in_place:

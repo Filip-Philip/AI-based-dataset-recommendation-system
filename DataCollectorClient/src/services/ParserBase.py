@@ -15,6 +15,7 @@ SIZES = "sizes"
 PATHS = "paths"
 OTHER = "other"
 SPARSE_CONVERSION_CONSTANT = 0.3
+DOWNLOAD_PERIOD_DAYS = 1
 
 
 # def convert_to_filetype_mean_std(row, df):
@@ -61,6 +62,11 @@ def update_files_data(files_data: Dict, filetypes: Set) -> Dict:
 
 def save_json(repository_data_path: str, json_object: str, from_date: str, to_date: str):
     with open(f"{repository_data_path}/backup_jsons/{from_date}-{to_date}.json", "w") as outfile:
+        outfile.write(json_object)
+
+
+def save_json_day(repository_data_path: str, json_object: str, year: int, month: int, day: int):
+    with open(f"{repository_data_path}/backup_jsons/{year}/{month}/{day}.json", "w") as outfile:
         outfile.write(json_object)
 
 

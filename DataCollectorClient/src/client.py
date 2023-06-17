@@ -78,7 +78,8 @@ if __name__ == "__main__":
 
         
         #DOWNLOAD/UPDATE
-        # TODO: DAILY downloads to json
+        # TODO: DAILY downloads to json (zenodo done)
+
         # parser.download()
         
         #check if parser should be updated
@@ -92,7 +93,7 @@ if __name__ == "__main__":
             print("Parser {} update is not required by timeinterval".format(parser_name))
         
         #CONVERT
-        # TODO: build dataframe from all/new? jsons
+        # TODO: build dataframe from all/new? jsons (from all done for zenodo)
         parser.dataframe_from_backup()
         
         parser.save(os.path.join(parser.base_dir, "parser_pickles", parser.pickle_fname))
