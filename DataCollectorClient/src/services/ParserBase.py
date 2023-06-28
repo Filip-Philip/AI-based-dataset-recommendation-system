@@ -1,3 +1,4 @@
+import os.path
 from abc import ABC, abstractmethod
 from datetime import datetime
 import pickle
@@ -66,7 +67,9 @@ def save_json(repository_data_path: str, json_object: str, from_date: str, to_da
 
 
 def save_json_day(repository_data_path: str, json_object: str, year: int, month: int, day: int):
-    with open(f"{repository_data_path}/backup_jsons/{year}/{month}/{day}.json", "w") as outfile:
+    filename = os.path.join(repository_data_path, 'backup_jsons', str(year), str(month), str(day) + '.json')
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as outfile:
         outfile.write(json_object)
 
 
@@ -144,21 +147,21 @@ class ParserBase(ABC):
 import torch
 import tqdm
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-def make_data_embedding(title_description_metadata, tokenizer, model, method="mean", dim=1):
-    # keep track what embeddings are done and save that to file
-    embedding_list = []
-
-    for i in tqdm.tqdm(range(len(title_description_metadata))):
-
-        embedding = embed_text(title_description_metadata[i], tokenizer, model)
-
-        if method == "mean":
-            embedding_list.append(embedding.mean(dim).to(device))
-
-    return embedding_list
-
-
-description_embedding = make_data_embedding(title_description_metadata_untrashed["text"].values, tokenizer, model)
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#
+#
+# def make_data_embedding(title_description_metadata, tokenizer, model, method="mean", dim=1):
+#     # keep track what embeddings are done and save that to file
+#     embedding_list = []
+#
+#     for i in tqdm.tqdm(range(len(title_description_metadata))):
+#
+#         embedding = embed_text(title_description_metadata[i], tokenizer, model)
+#
+#         if method == "mean":
+#             embedding_list.append(embedding.mean(dim).to(device))
+#
+#     return embedding_list
+#
+#
+# description_embedding = make_data_embedding(title_description_metadata_untrashed["text"].values, tokenizer, model)

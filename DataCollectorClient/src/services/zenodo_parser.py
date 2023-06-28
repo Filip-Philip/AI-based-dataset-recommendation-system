@@ -2,6 +2,7 @@ import datetime
 from tqdm import tqdm
 import requests
 import json
+from time import sleep
 import pandas as pd
 from typing import List, Tuple
 import pickle
@@ -93,12 +94,12 @@ def get_file_data(datasets, important_filetypes: KeysView):
 
 
 class ZenodoParser(ParserBase):
-    base_dir = os.path.join(ROOT_DIR, 'data', 'Zenodo/')
+    base_dir = os.path.join(ROOT_DIR, 'data', 'Zenodo')
     ORIGINAL_COLUMN_NAMES = ["doi", "download_time", "created", "updated", "version", "title",
                              "creators", "description", "keywords", "filetypes", "filepaths"]
     MAX_DOWNLOAD_PER_QUERY = 10000
 
-    def __init__(self, download_period_days):
+    def __init__(self, download_period_days: int = 1):
         self.data = pd.DataFrame()
         self.last_updated = None
         self.occurrence_count = dict()
@@ -115,6 +116,7 @@ class ZenodoParser(ParserBase):
         :param number_of_datasets:
         :return:
         '''
+
         response = requests.get('https://zenodo.org/api/records',
                                 params={'access_token': ACCESS_TOKEN,
                                         'q': 'publication_date:{%(start)s TO %(end)s]' %
@@ -122,13 +124,33 @@ class ZenodoParser(ParserBase):
                                         'size': number_of_datasets,
                                         'type': 'dataset'})
 
+        error_counter = 0
+        while response.status_code != STATUS_OK and error_counter < 35:
+            if error_counter > 0:
+                sleep(2)
+                print("error response, trying again")
+            print(f"downloading ({start_date} to {end_date}]")
+            response = requests.get('https://zenodo.org/api/records',
+                                    params={'access_token': ACCESS_TOKEN,
+                                            'q': 'publication_date:{%(start)s TO %(end)s]' %
+                                                 {'start': start_date, 'end': end_date},
+                                            'size': number_of_datasets,
+                                            'type': 'dataset'})
+
+            error_counter += 1
+
+        if response.status_code != STATUS_OK:
+            print("Couldn't download this time interval - consecutive errors from the repository server.")
+
         if response.status_code == STATUS_OK:
+            if error_counter > 1:
+                print("Download finally successful!")
             self.last_updated = datetime.datetime.now()
             response_json = response.json()
 
             time_column_name = self.ORIGINAL_COLUMN_NAMES[1]
             for dataset in response_json["hits"]["hits"]:
-                dataset[time_column_name] = self.last_updated
+                dataset[time_column_name] = self.last_updated.strftime('%Y-%m-%d')
 
             json_object = json.dumps(response_json)
 
@@ -316,11 +338,17 @@ class ZenodoParser(ParserBase):
 
 if __name__ == "__main__":
     parser = ZenodoParser()
-    parser : ZenodoParser = parser.load("AI-based-dataset-recommendation-system\data\Zenoodo\pickle_test_all_with_files_sparse.pickle")
-    parser.data.info()
-    parser.save_title_description_json(parser.data, "AI-based-dataset-recommendation-system\data\Zenoodo\pickle_test_all_with_files_sparse.json")
+    # parser : ZenodoParser = parser.load("AI-based-dataset-recommendation-system\data\Zenoodo\pickle_test_all_with_files_sparse.pickle")
+    # parser.data.info()
+    # parser.save_title_description_json(parser.data, "AI-based-dataset-recommendation-system\data\Zenoodo\pickle_test_all_with_files_sparse.json")
     
-    # parser.download()
+    # parser.download(end_date="2017-12-31")
+    parser.dataframe_from_backup()
+    print(parser.data.info())
+    print(parser.data.head())
+    converted = parser.convert()
+    print(converted.info())
+    print(converted.head())
     # parser = parser.load("pickle_test_all2.pickle")
     # parser.__get_target_data(160)
     # parser.download_all_from_backup(True)
